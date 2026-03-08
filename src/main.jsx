@@ -14,6 +14,7 @@ import Store from "./pages/Store";
 import MenuDetail from "./pages/MenuDetail";
 import Cart from "./pages/Cart";
 import AIRecommend from "./pages/AIRecommend";
+import My from "./pages/My";
 
 const router = createBrowserRouter([
   {
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
   {
     path: "ai-recommend",
     element: <AIRecommend />,
+  },
+  {
+    path: "my",
+    element: <My />,
   },
   {
     path: "fail",
