@@ -13,8 +13,12 @@ import Home from "./pages/Home";
 import Store from "./pages/Store";
 import MenuDetail from "./pages/MenuDetail";
 import Cart from "./pages/Cart";
-import AIRecommend from "./pages/AIRecommend";
+import AIRecommend from "./pages/ai/AIRecommend";
 import My from "./pages/My";
+import StoreReviews from "./pages/review/StoreReviews";
+import Review from "./pages/review/Review";
+import OwnerReviews from "./pages/owner/OwnerReviews";
+import AdminReviews from "./pages/admin/AdminReviews";
 
 const router = createBrowserRouter([
   {
@@ -87,6 +91,22 @@ const router = createBrowserRouter([
   {
     path: "ai-recommend",
     element: <AIRecommend />,
+  },
+  {
+    path: "store-reviews",
+    element: <StoreReviews />,
+  },
+  {
+    path: "review",
+    element: <Review />,
+  },
+  {
+    path: "owner-reviews",
+    element: <OwnerReviews />,
+  },
+  {
+    path: "admin-reviews",
+    element: <AdminReviews />,
   },
   {
     path: "my",

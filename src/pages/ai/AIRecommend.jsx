@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { G, PRIMARY, AI_COLOR, AI_LIGHT, Phone, TopBar, Badge, Img, Btn, Divider, TopContent } from "../components/UI";
-
+import { G, PRIMARY, AI_COLOR, AI_LIGHT, Phone, TopBar, Badge, Img, Btn, Divider, TopContent } from "../../components/UI";
 function AIRecommend({go}){
   const navigate = useNavigate();
   const goTo = (path) => navigate(`/${path}`);

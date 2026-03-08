@@ -168,4 +168,9 @@ function AdminShell({title,go,back="admin",children,right}){
   </Phone>;
 }
 
-export { G, PRIMARY, PRIMARY_LIGHT, KAKAO, AI_COLOR, AI_LIGHT, PW, PH, STATUS_H, NAV_H, TOPBAR_H, PAGE_TOP, screens, FlatIcons, Icon, Btn, Input, Chip, Divider, Img, Stars, Badge, Section, SearchBar, StatCard, THead, TRow, Radio, TopBar, BottomNav, Phone, AdminShell, HomeTopBar, TopContent };
+// simple container for desktop pages (max-width and centered)
+function Container({children, style}){
+  return <div style={{maxWidth:"1024px",margin:"0 auto",padding:"20px",...style}}>{children}</div>;
+}
+
+export { G, PRIMARY, PRIMARY_LIGHT, KAKAO, AI_COLOR, AI_LIGHT, PW, PH, STATUS_H, NAV_H, TOPBAR_H, PAGE_TOP, screens, FlatIcons, Icon, Btn, Input, Chip, Divider, Img, Stars, Badge, Section, SearchBar, StatCard, THead, TRow, Radio, TopBar, BottomNav, Phone, AdminShell, HomeTopBar, TopContent, Container };
