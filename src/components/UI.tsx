@@ -147,7 +147,6 @@ function BottomNav({active,go}){
 function Phone({children,navActive,go,noNav,noStatus}){
   const innerH=PH-(noStatus?0:STATUS_H)-(noNav?0:NAV_H);
   return <div style={{width:`${PW}px`,height:"100vh",maxHeight:`${PH}px`,border:`3px solid ${G[800]}`,borderRadius:"44px",overflow:"hidden",background:"#fff",boxShadow:"0 12px 48px rgba(0,0,0,0.18)",flexShrink:0,display:"flex",flexDirection:"column"}}>
-    {!noStatus&&<div style={{height:`${STATUS_H}px`,background:G[900],display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 24px",fontSize:"12px",color:"#fff",fontWeight:600,flexShrink:0}}><span>9:41</span><span>●●●● 🔋</span></div>}
     <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",flexShrink:0}}>{children}</div>
     {!noNav&&<BottomNav active={navActive} go={go}/>}
   </div>;
@@ -169,4 +168,9 @@ function AdminShell({title,go,back="admin",children,right}){
   </Phone>;
 }
 
-export { G, PRIMARY, PRIMARY_LIGHT, KAKAO, AI_COLOR, AI_LIGHT, PW, PH, STATUS_H, NAV_H, TOPBAR_H, PAGE_TOP, screens, FlatIcons, Icon, Btn, Input, Chip, Divider, Img, Stars, Badge, Section, SearchBar, StatCard, THead, TRow, Radio, TopBar, BottomNav, Phone, AdminShell, HomeTopBar, TopContent };
+// simple container for desktop pages (max-width and centered)
+function Container({children, style}){
+  return <div style={{maxWidth:"1024px",margin:"0 auto",padding:"20px",...style}}>{children}</div>;
+}
+
+export { G, PRIMARY, PRIMARY_LIGHT, KAKAO, AI_COLOR, AI_LIGHT, PW, PH, STATUS_H, NAV_H, TOPBAR_H, PAGE_TOP, screens, FlatIcons, Icon, Btn, Input, Chip, Divider, Img, Stars, Badge, Section, SearchBar, StatCard, THead, TRow, Radio, TopBar, BottomNav, Phone, AdminShell, HomeTopBar, TopContent, Container };

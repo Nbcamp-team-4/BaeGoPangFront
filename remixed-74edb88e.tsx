@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import StoreReviews from "./src/pages/review/StoreReviews";
+import Review from "./src/pages/review/Review";
 
 const G = {
   50:"#FAFAFA",100:"#F5F5F5",200:"#EEEEEE",300:"#E0E0E0",
@@ -1374,9 +1376,9 @@ function RefundModal({orderId,orderStore,orderAmount,onClose,onDone}){
 
 function OrderHistory({go}){
   const orders=[
-    {id:"ORD-016",store:"엄마손 분식",amount:"13,000원",date:"2025-03-02",status:"주문대기",color:PRIMARY,bg:PRIMARY_LIGHT,canCancel:true,canRefund:false,payFailed:false},
-    {id:"ORD-001",store:"맛있는 한식당",amount:"37,000원",date:"2025-03-01",status:"배달완료",color:"#2E7D32",bg:"#E8F5E9",canCancel:false,canRefund:true,payFailed:false},
-    {id:"ORD-002",store:"황금 중식당",amount:"22,000원",date:"2025-02-28",status:"조리중",color:"#E65100",bg:"#FFF3E0",canCancel:false,canRefund:false,payFailed:false},
+    {id:"ORD-016",store:"엄마손 분식",items:"떡볶이 ×1",amount:"13,000원",date:"2025-03-02",status:"주문대기",color:PRIMARY,bg:PRIMARY_LIGHT,canCancel:true,canRefund:false,payFailed:false},
+    {id:"ORD-001",store:"맛있는 한식당",items:"김치찌개 ×1, 불고기 정식 ×2",amount:"37,000원",date:"2025-03-01",status:"배달완료",color:"#2E7D32",bg:"#E8F5E9",canCancel:false,canRefund:true,payFailed:false},
+    {id:"ORD-002",store:"황금 중식당",items:"짜장면 ×1",amount:"22,000원",date:"2025-02-28",status:"조리중",color:"#E65100",bg:"#FFF3E0",canCancel:false,canRefund:false,payFailed:false},
     {id:"ORD-005",store:"두부마을",amount:"9,000원",date:"2025-02-27",status:"환불요청",color:"#7B1FA2",bg:"#F3E5F5",canCancel:false,canRefund:false,payFailed:false,isRefundPending:true},
     {id:"ORD-006",store:"엄마손 분식",amount:"11,000원",date:"2025-02-26",status:"환불완료",color:"#4A148C",bg:"#EDE7FF",canCancel:false,canRefund:false,payFailed:false,isRefundDoneServer:true},
     {id:"ORD-003",store:"엄마손 분식",amount:"15,000원",date:"2025-02-25",status:"결제실패",color:"#C62828",bg:"#FFEBEE",canCancel:false,canRefund:false,payFailed:true},
@@ -1385,6 +1387,15 @@ function OrderHistory({go}){
   const [cancelled,setCancelled]=useState([]);
   const [refundDone,setRefundDone]=useState([]);
   const [refundModal,setRefundModal]=useState(null);
+
+  const [myReviews,setMyReviews]=useState([]);
+  const [sidebarTab,setSidebarTab]=useState("reviews");
+  useEffect(()=>{
+    fetch("/api/my/reviews")
+      .then(r=>r.json())
+      .then(setMyReviews)
+      .catch(console.error);
+  },[]);
 
   return <Phone navActive="order-history" go={go}>
           {refundModal&&(
@@ -1397,7 +1408,9 @@ function OrderHistory({go}){
       />
     )}
     <TopBar title="주문 내역" go={go} backTo="home"/>
-    <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",flexDirection:"column",gap:"9px"}}>
+    <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",gap:"12px"}}>
+      {/* 왼쪽: 주문 리스트 */}
+      <div style={{flex:2,display:"flex",flexDirection:"column",gap:"9px"}}>
       {orders.map((o,i)=>{
         const isCancelled=cancelled.includes(o.id);
         const isRefunded=refundDone.includes(o.id);
@@ -1439,6 +1452,35 @@ function OrderHistory({go}){
         </div>;
       })}
     </div>
+    {/* 오른쪽: 사이드바(리뷰/메뉴) */}
+    <div style={{flex:1,background:"#f9f9f9",borderLeft:`1px solid ${G[200]}`,display:"flex",flexDirection:"column"}}>
+      <div style={{display:"flex"}}>
+        <button onClick={()=>setSidebarTab("reviews")} style={{flex:1,padding:"8px",border:"none",background:sidebarTab==="reviews"?"#fff":"#eee",fontWeight:800,cursor:"pointer"}}>내 리뷰</button>
+        <button onClick={()=>setSidebarTab("menu")} style={{flex:1,padding:"8px",border:"none",background:sidebarTab==="menu"?"#fff":"#eee",fontWeight:800,cursor:"pointer"}}>주문 메뉴</button>
+      </div>
+      <div style={{padding:"10px",overflowY:"auto",flex:1}}>
+        {sidebarTab==="reviews" && (
+          myReviews.length===0 ? <div style={{fontSize:"11px",color:G[400]}}>작성된 리뷰가 없습니다.</div> :
+          myReviews.map((r,i)=>(
+            <div key={i} style={{marginBottom:"10px"}}>
+              <div style={{fontSize:"12px",fontWeight:700}}>{r.store}</div>
+              <Stars v={r.rating} size={11}/>
+              <div style={{fontSize:"11px",color:G[600],marginTop:"3px"}}>{r.content.slice(0,30)}...</div>
+            </div>
+          ))
+        )}
+        {sidebarTab==="menu" && (
+          orders.map((o,i)=>(
+            <div key={i} style={{marginBottom:"10px"}}>
+              <div style={{fontSize:"12px",fontWeight:700}}>{o.store}</div>
+              <div style={{fontSize:"11px",color:G[600]}}>{o.items||"메뉴정보 없음"}</div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  </div>
+  </Phone>;
   </Phone>;
 }
 
