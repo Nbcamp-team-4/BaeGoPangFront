@@ -11,6 +11,7 @@ import { WidgetCheckoutPage } from "./pages/widget/WidgetCheckout";
 import { WidgetSuccessPage } from "./pages/widget/WidgetSuccess";
 import Home from "./pages/Home";
 import Store from "./pages/Store";
+import OrderPage from "./pages/OrderPage";
 import MenuDetail from "./pages/MenuDetail";
 import Cart from "./pages/Cart";
 import AIRecommend from "./pages/ai/AIRecommend";
@@ -115,6 +116,10 @@ const router = createBrowserRouter([
   {
     path: "fail",
     element: <FailPage />,
+  },
+  {
+    path: "order",
+    element: <OrderPage />,
   },
 ]);
 
