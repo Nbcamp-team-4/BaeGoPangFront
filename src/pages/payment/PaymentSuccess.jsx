@@ -15,6 +15,11 @@ export function PaymentSuccessPage() {
         paymentKey: searchParams.get("paymentKey"),
       };
 
+      // alert(JSON.stringify(requestData));
+
+      alert(requestData.paymentKey);
+      alert(requestData.orderId);
+
       const response = await fetch(BACKEND_CONFIRM_URL, {
         method: "POST",
         headers: {

@@ -14,7 +14,11 @@ export function WidgetSuccessPage() {
         amount: searchParams.get("amount"),
         paymentKey: searchParams.get("paymentKey"),
       };
+      // alert(JSON.stringify(requestData));
 
+      alert(requestData.paymentKey);
+      alert(requestData.orderId);
+      alert(requestData.amount);
       const response = await fetch(BACKEND_CONFIRM_URL, {
         method: "POST",
         headers: {

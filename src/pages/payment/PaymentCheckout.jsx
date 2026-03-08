@@ -2,9 +2,6 @@ import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import { useEffect, useState } from "react";
 
 // ------  SDK 초기화 ------
-// TODO: clientKey는 개발자센터의 API 개별 연동 키 > 결제창 연동에 사용하려할 MID > 클라이언트 키로 바꾸세요.
-// TODO: server.js 의 secretKey 또한 결제위젯 연동 키가 아닌 API 개별 연동 키의 시크릿 키로 변경해야 합니다.
-// TODO: 구매자의 고유 아이디를 불러와서 customerKey로 설정하세요. 이메일・전화번호와 같이 유추가 가능한 값은 안전하지 않습니다.
 // @docs https://docs.tosspayments.com/sdk/v2/js#토스페이먼츠-초기화
 const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
 const customerKey = generateRandomString();
@@ -56,7 +53,7 @@ export function PaymentCheckoutPage() {
         await payment.requestPayment({
           method: "CARD", // 카드 및 간편결제
           amount,
-          orderId: "33d35f5f-e4e1-4515-aefd-a35db95b2345", // 고유 주문번호
+          orderId: "33d35f5f-e4e1-1234-aefd-a35db95b2341", // 고유 주문번호
           orderName: "토스 티셔츠 외 2건",
           successUrl: window.location.origin + "/payment/success", // 결제 요청이 성공하면 리다이렉트되는 URL
           failUrl: window.location.origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL

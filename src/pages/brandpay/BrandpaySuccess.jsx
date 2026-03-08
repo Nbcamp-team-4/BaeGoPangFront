@@ -15,7 +15,9 @@ export function BrandpaySuccessPage() {
         paymentKey: searchParams.get("paymentKey"),
         customerKey: searchParams.get("customerKey"),
       };
-
+      // alert(JSON.stringify(requestData));    
+      alert(requestData.paymentKey);
+      alert(requestData.orderId);
       const response = await fetch(BACKEND_CONFIRM_URL, {
         method: "POST",
         headers: {

@@ -9,6 +9,11 @@ import { PaymentSuccessPage } from "./pages/payment/PaymentSuccess";
 import { BrandpaySuccessPage } from "./pages/brandpay/BrandpaySuccess";
 import { WidgetCheckoutPage } from "./pages/widget/WidgetCheckout";
 import { WidgetSuccessPage } from "./pages/widget/WidgetSuccess";
+import Home from "./pages/Home";
+import Store from "./pages/Store";
+import MenuDetail from "./pages/MenuDetail";
+import Cart from "./pages/Cart";
+import AIRecommend from "./pages/AIRecommend";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +66,26 @@ const router = createBrowserRouter([
         element: <PaymentSuccessPage />,
       },
     ],
+  },
+  {
+    path: "home",
+    element: <Home />,
+  },
+  {
+    path: "store",
+    element: <Store />,
+  },
+  {
+    path: "menu-detail",
+    element: <MenuDetail />,
+  },
+  {
+    path: "cart",
+    element: <Cart />,
+  },
+  {
+    path: "ai-recommend",
+    element: <AIRecommend />,
   },
   {
     path: "fail",
