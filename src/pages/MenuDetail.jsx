@@ -1,88 +1,336 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { G, PRIMARY, Icon, Chip, Img, Stars, Badge, Section, Phone, TopBar, Btn, Divider } from "../components/UI";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { TopBar, Img, Stars, G, PRIMARY } from "../components/UI";
+import PageLayout from "../components/PageLayout";
+import "../App.css";
 
-function MenuDetail({go}){
+const MENU_ITEMS = [
+  {
+    id: 1,
+    category: "인기메뉴",
+    rank: 1,
+    name: "김치찌개",
+    option: "공기밥 포함",
+    price: 8000,
+    reviews: 89,
+    ai: true,
+    desc: "진한 국물과 돼지고기가 들어간 인기 메뉴",
+    image: null,
+  },
+  {
+    id: 2,
+    category: "인기메뉴",
+    rank: 2,
+    name: "된장찌개",
+    option: "공기밥 포함",
+    price: 7500,
+    reviews: 62,
+    ai: false,
+    desc: "구수한 된장 베이스의 기본 찌개",
+    image: null,
+  },
+  {
+    id: 3,
+    category: "세트메뉴",
+    rank: 3,
+    name: "불고기 정식",
+    option: "밥 + 국 + 반찬 3종",
+    price: 12000,
+    reviews: 45,
+    ai: true,
+    desc: "불고기와 반찬이 함께 나오는 든든한 한 상",
+    image: null,
+  },
+  {
+    id: 4,
+    category: "단품",
+    rank: null,
+    name: "제육볶음",
+    option: "단품 메뉴",
+    price: 9500,
+    reviews: 38,
+    ai: false,
+    desc: "매콤달콤한 제육볶음",
+    image: null,
+  },
+  {
+    id: 5,
+    category: "특가",
+    rank: null,
+    name: "오늘의 특가 백반",
+    option: "한정 수량",
+    price: 6900,
+    reviews: 21,
+    ai: false,
+    desc: "가성비 좋은 오늘의 특가 메뉴",
+    image: null,
+  },
+];
+
+function formatPrice(v) {
+  return Number(v || 0).toLocaleString("ko-KR");
+}
+
+export default function MenuDetail() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const goTo = (path) => navigate(`/${path}`);
-  const [qty,setQty]=useState(1);
-  const [selectedSize,setSelectedSize]=useState("보통");
-  const [selectedSpicy,setSelectedSpicy]=useState("보통맛");
-  const [selectedAdd,setSelectedAdd]=useState([]);
-  const price=8000;
-  const addCost=selectedAdd.includes("공기밥 추가")?1000:0+selectedAdd.includes("계란 추가")?500:0+selectedAdd.includes("치즈 추가")?1500:0;
-  const sizeCost=selectedSize==="대(+2,000원)"?2000:0;
-  const total=(price+addCost+sizeCost)*qty;
-  const toggleAdd=(val)=>setSelectedAdd(a=>a.includes(val)?a.filter(v=>v!==val):[...a,val]);
-  return <Phone noStatus navActive="home" go={go}>
-    <TopBar title="메뉴 상세" go={go} backTo="store"/>
-    <div style={{flex:1,overflowY:"auto"}}>
-      <Img h="210px" label="김치찌개 이미지" style={{borderRadius:0,border:"none",flexShrink:0}}/>
-      <div style={{padding:"16px 16px 0",display:"flex",flexDirection:"column",gap:"14px"}}>
-        <div>
-          <div style={{display:"flex",alignItems:"center",gap:"7px",flexWrap:"wrap",marginBottom:"5px"}}>
-            <span style={{fontSize:"20px",fontWeight:900,color:G[900]}}>김치찌개</span>
-            <Badge color="#7B1FA2" bg="#F3E5F5">✨ AI 추천</Badge>
-            <Badge color="#fff" bg={PRIMARY}>인기 1위</Badge>
-          </div>
-          <div style={{fontSize:"13px",color:G[500],lineHeight:"1.7"}}>30년 전통의 손맛으로 끓인 얼큰한 김치찌개입니다.</div>
-        </div>
-        <div style={{display:"flex",gap:"8px"}}>
-          <div style={{flex:1,padding:"12px",background:PRIMARY_LIGHT,borderRadius:"11px",textAlign:"center"}}>
-            <div style={{fontSize:"10px",color:G[500],fontWeight:600}}>기본 가격</div>
-            <div style={{fontSize:"20px",fontWeight:900,color:PRIMARY,marginTop:"2px"}}>8,000원</div>
-          </div>
-          <div style={{flex:1,padding:"12px",background:G[50],borderRadius:"11px",textAlign:"center"}}>
-            <div style={{fontSize:"10px",color:G[500],fontWeight:600}}>평점</div>
-            <div style={{fontSize:"16px",fontWeight:900,color:G[900],marginTop:"2px"}}>4.8 ★</div>
-          </div>
-        </div>
-        <Divider/>
-        {/* 원산지 */}
-        <div style={{padding:"11px 13px",background:G[50],borderRadius:"10px",border:`1px solid ${G[200]}`}}>
-          <div style={{fontSize:"12px",fontWeight:800,color:G[900],marginBottom:"8px"}}>📋 원산지 정보</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:"6px"}}>
-            {[["돼지고기","국내산(제주)"],["김치","국내산"],["두부","국내산"],["대파","국내산"],["고춧가루","국내산"]].map(([item,origin])=>(
-              <div key={item} style={{display:"flex",alignItems:"center",borderRadius:"20px",overflow:"hidden",border:`1px solid ${G[300]}`,fontSize:"11px",flexShrink:0}}>
-                <span style={{padding:"4px 8px",background:G[200],color:G[700],fontWeight:700}}>{item}</span>
-                <span style={{padding:"4px 9px",background:"#fff",color:G[500],fontWeight:500}}>{origin}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <Divider/>
-        {/* 사이즈 */}
-        <div>
-          <div style={{fontSize:"13px",fontWeight:800,color:G[900],marginBottom:"8px"}}>사이즈 <Badge bg={PRIMARY} color="#fff">필수</Badge></div>
-          <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
-            {[{label:"보통",price:0},{label:"대(+2,000원)",price:2000}].map((opt,i)=>(
-              <div key={i} onClick={()=>setSelectedSize(opt.label)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 13px",border:`1.5px solid ${selectedSize===opt.label?PRIMARY:G[200]}`,borderRadius:"9px",background:selectedSize===opt.label?PRIMARY_LIGHT:"#fff",cursor:"pointer"}}>
-                <div style={{display:"flex",alignItems:"center",gap:"9px"}}>
-                  <div style={{width:"18px",height:"18px",borderRadius:"50%",border:`2px solid ${selectedSize===opt.label?PRIMARY:G[300]}`,background:selectedSize===opt.label?PRIMARY:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    {selectedSize===opt.label&&<div style={{width:"9px",height:"9px",borderRadius:"50%",background:"#fff"}}/>}
-                  </div>
-                  <span style={{fontSize:"13px",fontWeight:selectedSize===opt.label?700:400,color:selectedSize===opt.label?PRIMARY:G[800]}}>{opt.label}</span>
+  const menuId = useMemo(() => (id ? parseInt(id, 10) : null), [id]);
+
+  const item = useMemo(() => {
+    if (!menuId) return MENU_ITEMS[0];
+    return MENU_ITEMS.find((m) => m.id === menuId) || MENU_ITEMS[0];
+  }, [menuId]);
+
+  const [quantity, setQuantity] = useState(1);
+  const [note, setNote] = useState("");
+
+  useEffect(() => {
+    setQuantity(1);
+    setNote("");
+  }, [item.id]);
+
+  const total = item.price * quantity;
+
+  const addToCart = () => {
+    try {
+      const raw = localStorage.getItem("cart") || "[]";
+      const cart = JSON.parse(raw);
+      const found = cart.find((c) => c.id === item.id);
+
+      if (found) {
+        found.quantity += quantity;
+      } else {
+        cart.push({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity,
+          option: item.option,
+        });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+      navigate("/cart");
+    } catch (e) {
+      console.error(e);
+      alert("장바구니에 담는 중 오류가 발생했습니다.");
+    }
+  };
+
+  const orderNow = () => {
+    const orderItem = {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity,
+      option: item.option,
+      note,
+    };
+    navigate("/order", { state: { items: [orderItem] } });
+  };
+
+  return (
+    <PageLayout contentStyle={{ padding: 0 }}>
+      <TopBar
+        title="메뉴 상세"
+        go={(p) => navigate(`/${p}`)}
+        backTo="store"
+      />
+
+      <div style={{ padding: 24 }}>
+        <div
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            background: "#fff",
+            border: `1px solid ${G[100]}`,
+          }}
+        >
+          <Img
+            h="360px"
+            label={item.name}
+            src={item.image}
+            style={{ width: "100%", objectFit: "cover" }}
+          />
+
+          <div style={{ padding: 24 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 16,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 240 }}>
+                <div
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 900,
+                    color: G[900],
+                  }}
+                >
+                  {item.name}
                 </div>
-                {opt.price>0&&<span style={{fontSize:"12px",fontWeight:700,color:G[600]}}>+{opt.price.toLocaleString()}원</span>}
+
+                <div style={{ marginTop: 8, color: G[600], fontSize: 16 }}>
+                  {item.option}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Stars v={4.5} size={14} />
+                  <span style={{ fontSize: 14, color: G[500] }}>
+                    {item.reviews}개 리뷰
+                  </span>
+
+                  {item.ai && (
+                    <span
+                      style={{
+                        background: PRIMARY,
+                        color: "#fff",
+                        padding: "5px 10px",
+                        borderRadius: 8,
+                        fontWeight: 800,
+                        fontSize: 12,
+                      }}
+                    >
+                      AI추천
+                    </span>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingBottom:"8px"}}>
-          <span style={{fontSize:"13px",fontWeight:800,color:G[900]}}>수량</span>
-          <div style={{display:"flex",alignItems:"center",gap:"14px",border:`1.5px solid ${G[300]}`,borderRadius:"10px",padding:"6px 14px"}}>
-            <button onClick={()=>setQty(q=>Math.max(1,q-1))} style={{width:"26px",height:"26px",borderRadius:"50%",border:`1.5px solid ${G[300]}`,background:"#fff",cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>−</button>
-            <span style={{fontSize:"16px",fontWeight:900,minWidth:"20px",textAlign:"center"}}>{qty}</span>
-            <button onClick={()=>setQty(q=>q+1)} style={{width:"26px",height:"26px",borderRadius:"50%",border:"none",background:PRIMARY,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,color:"#fff"}}>+</button>
+
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 26, fontWeight: 900 }}>
+                  {formatPrice(item.price)}원
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: 18,
+                color: G[600],
+                lineHeight: 1.7,
+                fontSize: 16,
+              }}
+            >
+              {item.desc}
+            </div>
+
+            <div
+              style={{
+                marginTop: 24,
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  style={qtyBtnStyle}
+                >
+                  -
+                </button>
+                <div
+                  style={{
+                    minWidth: 40,
+                    textAlign: "center",
+                    fontWeight: 800,
+                    fontSize: 16,
+                  }}
+                >
+                  {quantity}
+                </div>
+                <button
+                  onClick={() => setQuantity((q) => q + 1)}
+                  style={qtyBtnStyle}
+                >
+                  +
+                </button>
+              </div>
+
+              <input
+                placeholder="요청사항 (예: 매운맛 조절, 포장 등)"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                style={{
+                  flex: 1,
+                  minWidth: 260,
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: `1px solid ${G[200]}`,
+                  fontSize: 14,
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                marginTop: 24,
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <button onClick={addToCart} style={primaryBtnStyle}>
+                담기 · {formatPrice(total)}원
+              </button>
+              <button onClick={orderNow} style={outlineBtnStyle}>
+                바로주문
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div style={{padding:"12px 16px",borderTop:`1px solid ${G[200]}`,background:"#fff",display:"flex",gap:"10px",alignItems:"center",flexShrink:0}}>
-      <div><div style={{fontSize:"10px",color:G[500]}}>총 금액</div><div style={{fontSize:"18px",fontWeight:900,color:PRIMARY}}>{total.toLocaleString()}원</div></div>
-      <Btn variant="primary" full style={{flex:1}} onClick={()=>goTo("cart")}>🛒 장바구니 담기</Btn>
-    </div>
-  </Phone>;
+    </PageLayout>
+  );
 }
 
-export default MenuDetail;
+const qtyBtnStyle = {
+  width: 40,
+  height: 40,
+  borderRadius: 8,
+  border: `1px solid ${G[200]}`,
+  background: "#fff",
+  fontSize: 18,
+  fontWeight: 800,
+  cursor: "pointer",
+};
+
+const primaryBtnStyle = {
+  flex: 1,
+  minWidth: 180,
+  border: "none",
+  background: PRIMARY,
+  color: "#fff",
+  padding: "14px 18px",
+  borderRadius: 12,
+  fontWeight: 900,
+  cursor: "pointer",
+  fontSize: 15,
+};
+
+const outlineBtnStyle = {
+  flex: 1,
+  minWidth: 180,
+  border: `1px solid ${G[200]}`,
+  background: "#fff",
+  color: G[700],
+  padding: "14px 18px",
+  borderRadius: 12,
+  fontWeight: 800,
+  cursor: "pointer",
+  fontSize: 15,
+};
