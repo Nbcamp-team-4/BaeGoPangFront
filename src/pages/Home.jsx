@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { G, PRIMARY, Icon, Chip, Img, Stars, Badge, Section, Phone, HomeTopBar, TopContent } from "../components/UI";
+import { G, PRIMARY, Icon, Chip, Img, Stars, Badge, Section, Phone, HomeTopBar, TopContent } from "../shared/UI";
 
 function Home({go}){
   const navigate = useNavigate();

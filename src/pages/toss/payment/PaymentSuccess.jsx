@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import {BACKEND_CONFIRM_URL} from "../../config/api";
 
 export function PaymentSuccessPage() {
   const navigate = useNavigate();
@@ -20,7 +19,7 @@ export function PaymentSuccessPage() {
       alert(requestData.paymentKey);
       alert(requestData.orderId);
 
-      const response = await fetch(BACKEND_CONFIRM_URL, {
+      const response = await fetch("/api/confirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

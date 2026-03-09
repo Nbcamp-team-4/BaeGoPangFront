@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import {BACKEND_CONFIRM_URL} from "../../config/api";
 
-export function BrandpaySuccessPage() {
+export function WidgetSuccessPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [responseData, setResponseData] = useState(null);
@@ -13,12 +12,13 @@ export function BrandpaySuccessPage() {
         orderId: searchParams.get("orderId"),
         amount: searchParams.get("amount"),
         paymentKey: searchParams.get("paymentKey"),
-        customerKey: searchParams.get("customerKey"),
       };
-      // alert(JSON.stringify(requestData));    
+      // alert(JSON.stringify(requestData));
+
       alert(requestData.paymentKey);
       alert(requestData.orderId);
-      const response = await fetch(BACKEND_CONFIRM_URL, {
+      alert(requestData.amount);
+      const response = await fetch("/api/confirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,7 +27,7 @@ export function BrandpaySuccessPage() {
       });
 
       const json = await response.json();
-
+      alert(json);
       if (!response.ok) {
         throw { message: json.message, code: json.code };
       }
@@ -40,7 +40,7 @@ export function BrandpaySuccessPage() {
         setResponseData(data);
       })
       .catch((error) => {
-        navigate(`/fail?code=${error.code}&message=${error.message}&orderId=${orderId}&paymentKey=${paymentKey}&customerKey=${customerKey}&amount=${amount}`);
+        navigate(`/fail?code=${error.code}&message=${error.message}&orderId=${orderId}&paymentKey=${paymentKey}&amount=${amount}`);
       });
   }, [searchParams]);
 
