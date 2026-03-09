@@ -1,1 +1,0 @@
-export const BACKEND_CONFIRM_URL = "http://localhost:8080/api/payments/confirm"
