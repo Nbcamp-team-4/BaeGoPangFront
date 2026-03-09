@@ -15,6 +15,10 @@ import MenuDetail from "./pages/MenuDetail";
 import Cart from "./pages/Cart";
 import AIRecommend from "./pages/AIRecommend";
 import My from "./pages/My";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import AdminPayments from "./pages/AdminPayments";
+import OwnerSalesDetail from "./pages/OwnerSalesDetail";
 
 const router = createBrowserRouter([
   {
@@ -91,6 +95,22 @@ const router = createBrowserRouter([
   {
     path: "my",
     element: <My />,
+  },
+  {
+    path: "signup",
+    element: <Signup />,
+  },
+  {
+    path: "login",
+    element: <Login />,
+  },
+  {
+    path: "owner-sales",
+    element: <OwnerSalesDetail />,
+  },
+  {
+    path: "admin-payments",
+    element: <AdminPayments />,
   },
   {
     path: "fail",
