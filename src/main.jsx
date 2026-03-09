@@ -17,6 +17,7 @@ import AIRecommend from "./pages/AIRecommend";
 import My from "./pages/My";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import OrderHistory from "./pages/OrderHistory";
 import AdminPayments from "./pages/AdminPayments";
 import OwnerSalesDetail from "./pages/OwnerSalesDetail";
 
@@ -91,6 +92,10 @@ const router = createBrowserRouter([
   {
     path: "ai-recommend",
     element: <AIRecommend />,
+  },
+  {
+    path: "order-history",
+    element: <OrderHistory />,
   },
   {
     path: "my",

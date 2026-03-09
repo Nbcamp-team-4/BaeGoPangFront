@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { G, PRIMARY, Icon, Chip, Img, Stars, Badge, Section, Phone, TopBar, Btn, Divider } from "../components/UI";
+import { G, PRIMARY, PRIMARY_LIGHT, Icon, Chip, Img, Stars, Badge, Section, Phone, TopBar, Btn, Divider, TopContent } from "../components/UI";
 
 function Cart({go}){
   const navigate = useNavigate();
@@ -15,8 +15,12 @@ function Cart({go}){
   const toggleItem=(si,ii)=>setItemChecked(itemChecked.map((sg,i)=>i===si?sg.map((v,j)=>j===ii?!v:v):sg));
   const totalGoods=stores.reduce((acc,s,si)=>acc+s.items.reduce((a,it,ii)=>a+(itemChecked[si][ii]?it.price*it.qty:0),0),0);
   const totalFee=stores.reduce((acc,s,si)=>acc+(checked[si]?s.fee:0),0);
-  return <Phone noStatus navActive="cart" go={go}>
+
+  return <Phone noStatus navActive="cart" go={goTo}>
+        <TopContent>
+
     <TopBar title="🛒 장바구니" go={go} backTo="home"/>
+</TopContent>
     <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",flexDirection:"column",gap:"12px"}}>
       {stores.map((s,si)=>(
         <div key={si} style={{border:`1.5px solid ${checked[si]?PRIMARY:G[200]}`,borderRadius:"13px",overflow:"hidden"}}>
