@@ -40,7 +40,7 @@ export function BrandpayCheckoutPage() {
         currency: "KRW",
         value: 1000,
       },
-      orderId: "33d35f5f-e4e1-4515-aefd-a35db95b2345", // 고유 주문번호
+      orderId: "33d35f5f-e4e1-1234-aefd-a35db95b2341", // 고유 주문번호
       orderName: "토스 티셔츠 외 2건",
       successUrl: window.location.origin + `/brandpay/success?customerId=${customerId}&`, // 결제 요청이 성공하면 리다이렉트되는 URL
       failUrl: window.location.origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL

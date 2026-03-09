@@ -127,7 +127,7 @@ export function WidgetCheckoutPage() {
               // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
               // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
               await widgets.requestPayment({
-                orderId: "33d35f5f-e4e1-4515-aefd-a35db95b2345", // 고유 주문 번호
+                orderId: "33d35f5f-e4e1-2323-aefd-a35db95b2341", // 고유 주문 번호
                 orderName: "토스 티셔츠 외 2건",
                 successUrl: window.location.origin + "/widget/success", // 결제 요청이 성공하면 리다이렉트되는 URL
                 failUrl: window.location.origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL

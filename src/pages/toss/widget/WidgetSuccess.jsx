@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import {BACKEND_CONFIRM_URL} from "../../config/api";
 
-export function PaymentSuccessPage() {
+export function WidgetSuccessPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [responseData, setResponseData] = useState(null);
@@ -14,8 +13,12 @@ export function PaymentSuccessPage() {
         amount: searchParams.get("amount"),
         paymentKey: searchParams.get("paymentKey"),
       };
+      // alert(JSON.stringify(requestData));
 
-      const response = await fetch(BACKEND_CONFIRM_URL, {
+      alert(requestData.paymentKey);
+      alert(requestData.orderId);
+      alert(requestData.amount);
+      const response = await fetch("/api/confirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -24,7 +27,7 @@ export function PaymentSuccessPage() {
       });
 
       const json = await response.json();
-
+      alert(json);
       if (!response.ok) {
         throw { message: json.message, code: json.code };
       }
