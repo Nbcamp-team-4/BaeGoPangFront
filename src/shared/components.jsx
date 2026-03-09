@@ -24,12 +24,31 @@ export function Btn({ children, variant="outline", size="md", onClick, style, di
   );
 }
 
-export function Input({ placeholder, style }) {
+// export function Input({ placeholder, style }) {
+//   return (
+//     <div style={{padding:"10px 13px",border:`1.5px solid ${G[300]}`,borderRadius:"10px",
+//       color:G[400],fontSize:"13px",background:G[50],...style}}>
+//       {placeholder}
+//     </div>
+//   );
+// }
+export function Input({ placeholder, style, ...props }) {
   return (
-    <div style={{padding:"10px 13px",border:`1.5px solid ${G[300]}`,borderRadius:"10px",
-      color:G[400],fontSize:"13px",background:G[50],...style}}>
-      {placeholder}
-    </div>
+    <input
+      placeholder={placeholder}
+      style={{
+        padding:"10px 13px",
+        border:`1.5px solid ${G[300]}`,
+        borderRadius:"10px",
+        color:G[400],
+        fontSize:"13px",
+        background:G[50],
+        width:"100%",
+        outline:"none",
+        ...style
+      }}
+      {...props}
+    />
   );
 }
 

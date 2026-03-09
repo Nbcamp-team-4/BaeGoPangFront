@@ -1,10 +1,41 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  screens/auth/Login.jsx
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { useState } from "react";
 import { Phone, Btn, Input, Divider } from "../../shared/components";
 import { PRIMARY } from "../../shared/constants";
 
 export default function Login({ go }) {
+
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          loginId,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("로그인 실패", data);
+        return;
+      }
+
+      go("home");
+    } catch (error) {
+      console.error("로그인 요청 중 오류", error);
+    }
+  };
+
   return (
     <Phone noNav>
       <div style={{flex:1,padding:"28px 24px",display:"flex",flexDirection:"column",gap:"18px",justifyContent:"center"}}>
