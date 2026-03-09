@@ -1,5 +1,5 @@
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import "./App.css";
 /* toss */
 import { BrandpayCheckoutPage } from "./pages/toss/brandpay/BrandpayCheckout";
@@ -54,7 +54,7 @@ import AdminReviews from "./pages/admin/AdminReviews";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <WidgetCheckoutPage />,
+    element: <Navigate to="/auth/login" replace />,
   },
 
   // 건들지 말것
