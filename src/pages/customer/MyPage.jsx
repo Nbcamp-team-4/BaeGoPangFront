@@ -71,8 +71,8 @@ export default function MyPage() {
   }, []);
 
   const handleSaveProfile = async () => {
-    const loginId = getLoginId();
-    if (!loginId) {
+    const id = getUserId();
+    if (!id) {
       setSaveError('로그인 정보가 없습니다.');
       return;
     }
@@ -81,7 +81,7 @@ export default function MyPage() {
     setSaveError(null);
 
     try {
-      const res = await apiFetch(`/api/users/${loginId}`, {
+      const res = await apiFetch(`/api/users/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({
           name: draft.name,
