@@ -257,8 +257,8 @@ export default function AddressPage({ onBack, onConfirm }) {
       phone: '010-1234-1234',
       address: newAddr.road,
       detailAddress: newAddr.detail,
-      latitude: 37.5759,
-      longitude: 126.9768,
+      latitude: 37.4979,
+      longitude: 127.0276,
       isDefault: addrs.length === 0
     };
 

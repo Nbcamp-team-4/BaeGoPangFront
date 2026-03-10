@@ -5,11 +5,10 @@ import { useEffect, useState } from 'react';
 import { Phone, Chip, Img, Badge, Section } from '../../shared/components';
 import { Icon } from '../../shared/icons';
 import { G, PRIMARY, AI_COLOR } from '../../shared/constants';
-
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
 
-import { getStores } from '../../shared/api/storeApi';
+import { getNearbyStores } from '../../shared/api/storeApi';
 
 function Stars({ v = 4.5, size = 12 }) {
   return (
@@ -36,7 +35,7 @@ export default function Home() {
 
   const [categories, setCategories] = useState(mockCats);
   const [cat, setCat] = useState(null);
-
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -53,7 +52,6 @@ export default function Home() {
         console.log('카테고리 전체 응답:', json);
 
         const rawList = json?.data?.content ?? json?.content ?? json?.data ?? [];
-
         const categoryList = Array.isArray(rawList) ? rawList : [];
 
         const normalizedCategories = categoryList.map((item) => ({
@@ -63,10 +61,12 @@ export default function Home() {
         }));
 
         setCategories([{ id: null, name: '전체', icon: '' }, ...normalizedCategories]);
+        setCategoriesLoaded(true);
 
         console.log('성공적으로 카테고리를 불러왔습니다.');
       } catch (e) {
         console.error('카테고리 조회 실패', e);
+        setCategoriesLoaded(true);
       }
     };
 
@@ -76,6 +76,7 @@ export default function Home() {
   // 가게 데이터
   const mockStores = [
     {
+      id: 'mock-1',
       name: '맛있는 한식당',
       cat: '한식',
       rating: 4.7,
@@ -86,6 +87,7 @@ export default function Home() {
       speed: '25~35분'
     },
     {
+      id: 'mock-2',
       name: '황금 중식당',
       cat: '중식',
       rating: 4.4,
@@ -96,6 +98,7 @@ export default function Home() {
       speed: '30~40분'
     },
     {
+      id: 'mock-3',
       name: '엄마손 분식',
       cat: '분식',
       rating: 4.9,
@@ -106,23 +109,24 @@ export default function Home() {
       speed: '15~25분'
     }
   ];
-
   const [stores, setStores] = useState(mockStores);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   useEffect(() => {
     const fetchStores = async () => {
+      if (!categoriesLoaded) return;
+
       try {
         setLoading(true);
         setError(null);
+        console.log('현재 활성화된 카테고리:', cat);
 
-        const res = await getStores(cat);
-
-        // `getStores`는 내부 조건에 따라 [] 또는 fetch Response를 반환함
-        if (Array.isArray(res)) {
-          setStores(res.length ? res : mockStores);
-          return;
-        }
+        const res = await getNearbyStores({
+          page: 0,
+          size: 10,
+          categoryId: cat
+        });
 
         if (!res.ok) {
           const bodyText = await res.text().catch(() => '');
@@ -136,14 +140,18 @@ export default function Home() {
         const list = Array.isArray(rawList) ? rawList : [];
 
         const normalized = list.map((s) => ({
-          name: s.name ?? s.storeName ?? s.title ?? '가게',
-          cat: s.categoryName ?? s.category ?? s.cat ?? '',
-          rating: s.rating ?? s.averageRating ?? 0,
+          id: s.id ?? s.storeId,
+          name: s.name ?? s.storeName ?? '가게',
+          cat: s.categoryName ?? s.category ?? '',
+          rating: s.averageRating ?? s.rating ?? 0,
           reviews: s.reviewCount ?? s.reviews ?? 0,
-          dist: s.distanceKm != null ? `${s.distanceKm}km` : s.dist ?? '',
-          minOrder: s.minOrderAmount != null ? s.minOrderAmount.toLocaleString() : s.minOrder ?? '',
-          fee: s.deliveryFee != null ? s.deliveryFee.toLocaleString() : s.fee ?? '',
-          speed: s.eta ?? s.speed ?? ''
+          dist: s.distanceKm != null ? `${s.distanceKm}km` : (s.dist ?? ''),
+          minOrder: s.minimumOrderAmount != null ? s.minimumOrderAmount.toLocaleString() : (s.minOrder ?? ''),
+          fee: s.deliveryFee != null ? s.deliveryFee.toLocaleString() : (s.fee ?? ''),
+          speed:
+            s.deliveryMinMinutes != null && s.deliveryMaxMinutes != null
+              ? `${s.deliveryMinMinutes}~${s.deliveryMaxMinutes}분`
+              : (s.speed ?? '')
         }));
 
         setStores(normalized.length ? normalized : mockStores);
@@ -157,7 +165,7 @@ export default function Home() {
     };
 
     fetchStores();
-  }, [cat]);
+  }, [categoriesLoaded, cat]);
 
   return (
     <Phone navActive="home">
@@ -246,7 +254,7 @@ export default function Home() {
             {stores.map((s, i) => (
               <div
                 key={i}
-                onClick={() => navigate('/customer/ai-recommend')}
+                onClick={() => navigate(`/customer/store?storeId=${s.id}`)}
                 style={{
                   border: `1.5px solid ${G[200]}`,
                   borderRadius: '13px',

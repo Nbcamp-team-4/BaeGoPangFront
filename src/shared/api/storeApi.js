@@ -1,5 +1,5 @@
 import { apiFetch } from './apiClient';
-import { getAddresses } from './addressApi';
+import { getDefaultAddress } from './addressApi';
 
 // 가게 상세 조회
 export const getStoreDetail = (storeId) => {
@@ -8,27 +8,19 @@ export const getStoreDetail = (storeId) => {
   });
 };
 
-// 가게 전체 조회
-export const getStores = async (categoryId) => {
-  const res = await getAddresses();
+// 내 주변 가게 조회
+export const getNearbyStores = async ({ page = 0, size = 10, categoryId }) => {
+  const params = new URLSearchParams();
 
-  if (!res.ok) {
-    console.error('주소 조회 실패', res);
-    return [];
+  const defaultAddress = await getDefaultAddress();
+  if (defaultAddress) {
+    params.append('addressId', defaultAddress.id);
   }
-  console.log('주소 조회 응답:', res);
+  if (page !== undefined && page !== null) params.append('page', page);
+  if (size !== undefined && size !== null) params.append('size', size);
+  if (categoryId) params.append('categoryId', categoryId);
 
-  const json = await res.json();
-  const addresses = json?.content ?? json?.data?.content ?? json?.data ?? [];
-
-  const addressId = addresses[0]?.id;
-
-  if (!addressId) {
-    console.error('기본 주소가 없습니다.');
-    return [];
-  }
-
-  return apiFetch(`/api/stores/nearby?addressId=${addressId}&categoryId=${categoryId ?? ''}`, {
+  return await apiFetch(`/api/stores/nearby?${params.toString()}`, {
     method: 'GET'
   });
 };
