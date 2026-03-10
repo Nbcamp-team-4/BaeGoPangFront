@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Phone, TopBar, Btn, Badge } from "../../shared/components";
 import { FlatIcons } from "../../shared/icons";
 import { G, PRIMARY } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
 /** 공통 환불 모달 — OrderHistory, OrderDetail에서 재사용 */
 export function RefundModal({ orderId, orderStore, orderAmount, onClose, onDone }) {
@@ -39,7 +40,9 @@ export function RefundModal({ orderId, orderStore, orderAmount, onClose, onDone 
   );
 }
 
-export default function OrderHistory({ go }) {
+export default function OrderHistory() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const orders = [
     { id:"ORD-016", store:"엄마손 분식",   amount:"13,000원", date:"2025-03-02", status:"주문대기",  color:PRIMARY,    bg:"#FFF3F0", canCancel:true,  canRefund:false, payFailed:false },
     { id:"ORD-001", store:"맛있는 한식당", amount:"37,000원", date:"2025-03-01", status:"배달완료",  color:"#2E7D32",  bg:"#E8F5E9", canCancel:false, canRefund:true,  payFailed:false },
@@ -54,11 +57,11 @@ export default function OrderHistory({ go }) {
   const [refundModal, setRefundModal] = useState(null);
 
   return (
-    <Phone navActive="order-history" go={go}>
+    <Phone navActive="order-history">
       {refundModal && (
         <RefundModal orderId={refundModal.id} orderStore={refundModal.store} orderAmount={refundModal.amount} onClose={()=>setRefundModal(null)} onDone={()=>{ setRefundDone(v=>[...v,refundModal.id]); setRefundModal(null); }}/>
       )}
-      <TopBar title="주문 내역" go={go} backTo="home"/>
+      <TopBar title="주문 내역" backTo="/customer/home"/>
       <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",flexDirection:"column",gap:"9px"}}>
         {orders.map((o,i) => {
           const isCancelled = cancelled.includes(o.id);
@@ -67,7 +70,7 @@ export default function OrderHistory({ go }) {
           const displayColor  = isCancelled?"#C62828":isRefunded||o.isRefundPending?"#7B1FA2":o.isRefundDoneServer?"#4A148C":o.color;
           const displayBg     = isCancelled?"#FFEBEE":isRefunded||o.isRefundPending?"#F3E5F5":o.isRefundDoneServer?"#EDE7FF":o.bg;
           return (
-            <div key={i} onClick={()=>go("order-detail")} style={{border:`1.5px solid ${G[200]}`,borderRadius:"11px",padding:"13px",cursor:"pointer",borderLeftWidth:"4px",borderLeftColor:displayColor,background:"#fff"}}>
+            <div key={i} onClick={()=>goTo("order-detail")} style={{border:`1.5px solid ${G[200]}`,borderRadius:"11px",padding:"13px",cursor:"pointer",borderLeftWidth:"4px",borderLeftColor:displayColor,background:"#fff"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <span style={{fontSize:"14px",fontWeight:800}}>{o.store}</span>
                 <span style={{fontSize:"11px",fontWeight:700,color:displayColor,padding:"3px 7px",borderRadius:"5px",background:displayBg}}>{displayStatus}</span>
@@ -76,7 +79,7 @@ export default function OrderHistory({ go }) {
                 <span>{o.id} · {o.date}</span><span style={{fontWeight:700,color:G[800]}}>{o.amount}</span>
               </div>
               <div style={{marginTop:"9px",display:"flex",gap:"6px",flexWrap:"wrap"}} onClick={e=>e.stopPropagation()}>
-                {o.status==="배달완료" && !isCancelled && !isRefunded && <Btn size="sm" variant="primary" onClick={e=>{e.stopPropagation();go("review");}}>리뷰 작성</Btn>}
+                {o.status==="배달완료" && !isCancelled && !isRefunded && <Btn size="sm" variant="primary" onClick={e=>{e.stopPropagation();goTo("review");}}>리뷰 작성</Btn>}
                 {o.canCancel && !isCancelled && (
                   <button onClick={e=>{e.stopPropagation();setCancelled(v=>[...v,o.id]);}} style={{padding:"5px 11px",borderRadius:"7px",border:"1.5px solid #FFCDD2",background:"#FFF5F5",color:"#C62828",fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"5px"}}>
                     {FlatIcons.cancel()} 주문 취소
@@ -86,7 +89,7 @@ export default function OrderHistory({ go }) {
                   <button onClick={e=>{e.stopPropagation();setRefundModal({id:o.id,store:o.store,amount:o.amount});}} style={{padding:"5px 11px",borderRadius:"7px",border:"1.5px solid #CE93D8",background:"#F3E5F5",color:"#7B1FA2",fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>↩ 환불 신청</button>
                 )}
                 {o.payFailed && (
-                  <button onClick={e=>{e.stopPropagation();go("order-fail");}} style={{padding:"5px 11px",borderRadius:"7px",border:`1.5px solid ${PRIMARY}44`,background:"#FFF3F0",color:PRIMARY,fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>💳 재결제</button>
+                  <button onClick={e=>{e.stopPropagation();goTo("order-fail");}} style={{padding:"5px 11px",borderRadius:"7px",border:`1.5px solid ${PRIMARY}44`,background:"#FFF3F0",color:PRIMARY,fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>💳 재결제</button>
                 )}
                 {isCancelled && <span style={{fontSize:"11px",color:"#C62828",fontWeight:600}}>✗ 취소 완료</span>}
                 {(isRefunded||o.isRefundPending)&&!o.isRefundDoneServer && <span style={{fontSize:"11px",color:"#7B1FA2",fontWeight:600}}>↩ 환불 요청중</span>}

@@ -225,7 +225,7 @@ function RegularTab({ d }) {
   );
 }
 
-export default function OwnerSalesDetail({ go }) {
+export default function OwnerSalesDetail() {
   const [tab,    setTab]    = useState("개요");
   const [period, setPeriod] = useState("오늘");
   const tabs    = ["개요","시간대","결제수단","취소분석","단골"];
@@ -233,7 +233,7 @@ export default function OwnerSalesDetail({ go }) {
   const d = SALES_DATA[period] || SALES_DATA["오늘"];
   return (
     <Phone noNav>
-      <TopBar title="매출 분석" go={go} backTo="owner-dash"/>
+      <TopBar title="매출 분석" backTo="/owner/dash"/>
       <div style={{background:"#fff",borderBottom:`1px solid ${G[100]}`,padding:"10px 12px",display:"flex",gap:"5px",flexShrink:0,overflowX:"auto"}}>
         {periods.map(p => <button key={p} onClick={()=>setPeriod(p)} style={{padding:"6px 13px",borderRadius:"20px",border:`1.5px solid ${period===p?PRIMARY:G[300]}`,background:period===p?PRIMARY:"#fff",color:period===p?"#fff":G[600],fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0}}>{p}</button>)}
       </div>

@@ -5,8 +5,11 @@ import { useState } from "react";
 import { Phone, Btn, Divider } from "../../shared/components";
 import { FlatIcons } from "../../shared/icons";
 import { G, PRIMARY } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
-export default function OrderComplete({ go }) {
+export default function OrderComplete() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const [cancelConfirm, setCancelConfirm] = useState(false);
   const [cancelled,     setCancelled]     = useState(false);
   if (cancelled) return (
@@ -15,7 +18,7 @@ export default function OrderComplete({ go }) {
         <div style={{width:"90px",height:"90px",borderRadius:"50%",background:"#FFEBEE",display:"flex",alignItems:"center",justifyContent:"center"}}>{FlatIcons.cancel("#C62828")}</div>
         <div><div style={{fontSize:"20px",fontWeight:900,color:"#C62828"}}>주문이 취소됐어요</div><div style={{fontSize:"13px",color:G[500],marginTop:"5px"}}>주문번호 ORD-2025-001</div></div>
         <div style={{fontSize:"12px",color:G[400],background:G[50],borderRadius:"10px",padding:"12px 16px",border:`1px solid ${G[200]}`}}>결제금액은 3~5 영업일 내에 환불됩니다.</div>
-        <Btn variant="primary" full onClick={()=>go("home")}>홈으로</Btn>
+        <Btn variant="primary" full onClick={()=>goTo("home")}>홈으로</Btn>
       </div>
     </Phone>
   );
@@ -47,12 +50,12 @@ export default function OrderComplete({ go }) {
           ))}
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:"9px",width:"100%"}}>
-          <Btn variant="primary" full onClick={()=>go("order-detail")}>주문 상세 보기</Btn>
+          <Btn variant="primary" full onClick={()=>goTo("order-detail")}>주문 상세 보기</Btn>
           <button onClick={()=>setCancelConfirm(true)} style={{width:"100%",padding:"12px",borderRadius:"10px",border:"1.5px solid #FFCDD2",background:"#FFF5F5",color:"#C62828",fontSize:"13px",fontWeight:700,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:"7px"}}>
             {FlatIcons.cancel()} 주문 취소하기
           </button>
           <div style={{fontSize:"10px",color:G[400],textAlign:"center"}}>가게 수락 전까지만 취소할 수 있어요</div>
-          <Btn full onClick={()=>go("home")}>홈으로</Btn>
+          <Btn full onClick={()=>goTo("home")}>홈으로</Btn>
         </div>
       </div>
     </Phone>

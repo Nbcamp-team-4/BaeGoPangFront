@@ -4,8 +4,11 @@ import { Phone, TopBar, Btn, Section, Radio, Divider } from '../../shared/compon
 import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
 import { FlatIcons } from '../../shared/icons';
 import AddressPage from './AddressSheet';
+import { useNavigate } from 'react-router-dom';
 
-export default function Order({ go }) {
+export default function Order() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const [pay, setPay] = useState('card');
   const [cardType, setCardType] = useState('');
   const [cardNum, setCardNum] = useState(['', '', '', '']);
@@ -48,8 +51,8 @@ export default function Order({ go }) {
   }
 
   return (
-    <Phone navActive="cart" go={go}>
-      <TopBar title="주문하기" go={go} backTo="cart" />
+    <Phone navActive="cart">
+      <TopBar title="주문하기" backTo="/customer/cart" />
 
       <div
         style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -324,11 +327,11 @@ export default function Order({ go }) {
 
         {/* 결제 버튼 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <Btn variant="primary" full size="lg" onClick={() => go('order-complete')}>
+          <Btn variant="primary" full size="lg" onClick={() => goTo('order-complete')}>
             40,000원 결제하기
           </Btn>
           <button
-            onClick={() => go('order-fail')}
+            onClick={() => goTo('order-fail')}
             style={{
               padding: '10px',
               borderRadius: '10px',

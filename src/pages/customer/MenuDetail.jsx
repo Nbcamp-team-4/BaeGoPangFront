@@ -4,16 +4,19 @@
 import { useState } from "react";
 import { Phone, TopBar, Btn, Badge, Divider, Img } from "../../shared/components";
 import { G, PRIMARY, PRIMARY_LIGHT } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
-export default function MenuDetail({ go }) {
+export default function MenuDetail() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const [qty, setQty] = useState(1);
   const [selectedSize, setSelectedSize] = useState("보통");
   const price = 8000;
   const sizeCost = selectedSize === "대(+2,000원)" ? 2000 : 0;
   const total = (price + sizeCost) * qty;
   return (
-    <Phone navActive="home" go={go}>
-      <TopBar title="메뉴 상세" go={go} backTo="store"/>
+    <Phone navActive="home">
+      <TopBar title="메뉴 상세" backTo="/customer/store"/>
       <div style={{flex:1,overflowY:"auto"}}>
         <Img h="210px" label="김치찌개 이미지" style={{borderRadius:0,border:"none",flexShrink:0}}/>
         <div style={{padding:"16px 16px 0",display:"flex",flexDirection:"column",gap:"14px"}}>
@@ -79,7 +82,7 @@ export default function MenuDetail({ go }) {
       </div>
       <div style={{padding:"12px 16px",borderTop:`1px solid ${G[200]}`,background:"#fff",display:"flex",gap:"10px",alignItems:"center",flexShrink:0}}>
         <div><div style={{fontSize:"10px",color:G[500]}}>총 금액</div><div style={{fontSize:"18px",fontWeight:900,color:PRIMARY}}>{total.toLocaleString()}원</div></div>
-        <Btn variant="primary" full style={{flex:1}} onClick={()=>go("cart")}>🛒 장바구니 담기</Btn>
+        <Btn variant="primary" full style={{flex:1}} onClick={()=>goTo("cart")}>🛒 장바구니 담기</Btn>
       </div>
     </Phone>
   );

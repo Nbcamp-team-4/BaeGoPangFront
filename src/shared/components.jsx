@@ -321,7 +321,13 @@ export function Radio({ checked, onClick, children, style }) {
 
 // ── 레이아웃 ───────────────────────────────────────────────
 
-export function TopBar({ title, go, backTo, right }) {
+export function TopBar({ title, backTo, right }) {
+  const navigate = useNavigate();
+  const handleBack = () => {
+    if (!backTo) return;
+    const to = backTo.startsWith('/') ? backTo : `/${backTo}`;
+    navigate(to);
+  };
   return (
     <div
       style={{
@@ -336,7 +342,7 @@ export function TopBar({ title, go, backTo, right }) {
       }}>
       {backTo && (
         <button
-          onClick={() => go(backTo)}
+          onClick={handleBack}
           style={{
             width: '34px',
             height: '34px',
@@ -512,7 +518,7 @@ export function BottomNav({ active }) {
   );
 }
 
-export function Phone({ children, navActive, go, noNav, noStatus }) {
+export function Phone({ children, navActive, noNav, noStatus }) {
   const innerH = PH - (noStatus ? 0 : STATUS_H) - (noNav ? 0 : NAV_H);
   return (
     <div
@@ -547,13 +553,18 @@ export function Phone({ children, navActive, go, noNav, noStatus }) {
         style={{ height: `${innerH}px`, overflowY: 'auto', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         {children}
       </div>
-      {!noNav && <BottomNav active={navActive} go={go} />}
+      {!noNav && <BottomNav active={navActive} />}
     </div>
   );
 }
 
 /** 관리자 전용 셸 (파란 상태바 + 뒤로가기 TopBar) */
 export function AdminShell({ title, go, back = 'admin', children, right }) {
+  const navigate = useNavigate();
+  const handleBack = () => {
+    const to = back.startsWith('/') ? back : `/${back}`;
+    navigate(to);
+  };
   return (
     <Phone noNav>
       <div
@@ -588,7 +599,7 @@ export function AdminShell({ title, go, back = 'admin', children, right }) {
             flexShrink: 0
           }}>
           <button
-            onClick={() => go(back)}
+            onClick={handleBack}
             style={{
               width: '34px',
               height: '34px',

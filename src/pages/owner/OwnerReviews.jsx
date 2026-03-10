@@ -6,7 +6,7 @@ import { Phone, TopBar, Btn, Badge } from '../../shared/components';
 import { FlatIcons } from '../../shared/icons';
 import { G, PRIMARY, AI_COLOR, AI_LIGHT } from '../../shared/constants';
 
-export default function OwnerReviews({ go }) {
+export default function OwnerReviews() {
   const [replyTarget, setReplyTarget] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [replyText, setReplyText] = useState('');
@@ -59,7 +59,7 @@ export default function OwnerReviews({ go }) {
   }
   return (
     <Phone noNav>
-      <TopBar title="⭐ 리뷰 관리" go={go} backTo="owner-dash" />
+      <TopBar title="⭐ 리뷰 관리" backTo="/owner/dash" />
       <div
         style={{
           flex: 1,

@@ -4,12 +4,15 @@
 import { useState } from "react";
 import { Phone, TopBar, Img, Badge } from "../../shared/components";
 import { G, PRIMARY, AI_COLOR } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
 function Stars({ v=4.5, size=12 }) {
   return <span style={{color:"#FFC107",fontSize:`${size}px`}}>{"★".repeat(Math.floor(v))}{"☆".repeat(5-Math.floor(v))}</span>;
 }
 
-export default function Store({ go }) {
+export default function Store() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const [activeMenu, setActiveMenu] = useState("인기메뉴");
   const [liked, setLiked] = useState(false);
   const menuTabs = ["인기메뉴","세트메뉴","단품","특가"];
@@ -19,8 +22,8 @@ export default function Store({ go }) {
     { rank:3, name:"불고기 정식", option:"밥+국+반찬3종", price:"12,000", reviews:45, ai:true  },
   ];
   return (
-    <Phone navActive="home" go={go}>
-      <TopBar title="맛있는 한식당" go={go} backTo="home" right={
+    <Phone navActive="home">
+      <TopBar title="맛있는 한식당" backTo="/customer/home" right={
         <button onClick={()=>setLiked(v=>!v)} style={{width:"36px",height:"36px",borderRadius:"50%",border:"none",background:liked?`${PRIMARY}18`:"#f0f0f0",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill={liked?PRIMARY:"none"} stroke={liked?PRIMARY:G[500]} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
@@ -32,21 +35,21 @@ export default function Store({ go }) {
             <div style={{fontSize:"18px",fontWeight:900,color:G[900]}}>맛있는 한식당</div>
             <div style={{display:"flex",alignItems:"center",gap:"6px",marginTop:"5px"}}>
               <Stars v={4.7}/><span style={{fontSize:"13px",fontWeight:700}}>4.7</span>
-              <span onClick={()=>go("store-reviews")} style={{fontSize:"11px",color:PRIMARY,cursor:"pointer",textDecoration:"underline"}}>리뷰 234개 보기 →</span>
+              <span onClick={()=>goTo("store-reviews")} style={{fontSize:"11px",color:PRIMARY,cursor:"pointer",textDecoration:"underline"}}>리뷰 234개 보기 →</span>
             </div>
           </div>
           {/* 사진 리뷰 미리보기 */}
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}}>
               <span style={{fontSize:"13px",fontWeight:800,color:G[900]}}>📸 사진 리뷰</span>
-              <span onClick={()=>go("store-reviews")} style={{fontSize:"11px",color:PRIMARY,fontWeight:600,cursor:"pointer"}}>전체보기 →</span>
+              <span onClick={()=>goTo("store-reviews")} style={{fontSize:"11px",color:PRIMARY,fontWeight:600,cursor:"pointer"}}>전체보기 →</span>
             </div>
             <div style={{display:"flex",gap:"6px",overflowX:"auto",marginLeft:"-14px",paddingLeft:"14px",paddingRight:"14px",paddingBottom:"4px"}}>
               {[1,2,3,4,5].map(n => (
                 <div key={n} style={{position:"relative",flexShrink:0}}>
                   <Img w="80px" h="80px" label={`리뷰${n}`} radius="9px"/>
                   {n===5 && (
-                    <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.45)",borderRadius:"9px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}} onClick={()=>go("store-reviews")}>
+                    <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.45)",borderRadius:"9px",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}} onClick={()=>goTo("store-reviews")}>
                       <span style={{color:"#fff",fontSize:"12px",fontWeight:800}}>+더보기</span>
                     </div>
                   )}
@@ -63,7 +66,7 @@ export default function Store({ go }) {
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:"9px"}}>
             {items.map((m,i) => (
-              <div key={i} onClick={()=>go("menu-detail")} style={{border:`1.5px solid ${G[200]}`,borderRadius:"11px",padding:"11px",display:"flex",gap:"10px",background:"#fff",cursor:"pointer"}}>
+              <div key={i} onClick={()=>goTo("menu-detail")} style={{border:`1.5px solid ${G[200]}`,borderRadius:"11px",padding:"11px",display:"flex",gap:"10px",background:"#fff",cursor:"pointer"}}>
                 <div style={{flex:1}}>
                   <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"5px",flexWrap:"wrap"}}>
                     <Badge bg={m.rank===1?PRIMARY:G[200]} color={m.rank===1?"#fff":G[500]}>인기 {m.rank}위</Badge>

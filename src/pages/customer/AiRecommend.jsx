@@ -4,8 +4,11 @@
 import { useState } from "react";
 import { Phone, TopBar, Btn, Badge, Img } from "../../shared/components";
 import { G, PRIMARY, AI_COLOR, AI_LIGHT } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
-export default function AiRecommend({ go }) {
+export default function AiRecommend() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const [step, setStep] = useState(0);
   const [sel, setSel] = useState({ mood:null, people:null, budget:null });
   const moods  = ["🌶️ 매운 게 땡겨요","🥣 따뜻한 국물","🥗 가볍게","🍖 고기가 땡겨요","🍜 면 요리","🎲 아무거나"];
@@ -17,8 +20,8 @@ export default function AiRecommend({ go }) {
     { name:"순두부찌개", store:"두부마을",       price:"9,000",  reason:"부드럽고 깊은 맛, 소화도 잘 돼요.", match:85 },
   ];
   return (
-    <Phone navActive="ai-recommend" go={go}>
-      <TopBar title="✨ AI 메뉴 추천" go={go} backTo="home"/>
+    <Phone navActive="ai-recommend">
+      <TopBar title="✨ AI 메뉴 추천" backTo="/customer/home"/>
       <div style={{flex:1,overflowY:"auto"}}>
         {step===0 && (
           <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:"18px"}}>
@@ -59,7 +62,7 @@ export default function AiRecommend({ go }) {
               <div style={{fontSize:"15px",fontWeight:800}}>✨ {sel.mood||"얼큰한 국물"}에 딱!</div>
             </div>
             {results.map((r,i) => (
-              <div key={i} onClick={()=>go("menu-detail")} style={{border:`1.5px solid ${i===0?AI_COLOR:G[200]}`,borderRadius:"13px",padding:"12px",background:i===0?AI_LIGHT:"#fff",cursor:"pointer"}}>
+              <div key={i} onClick={()=>goTo("menu-detail")} style={{border:`1.5px solid ${i===0?AI_COLOR:G[200]}`,borderRadius:"13px",padding:"12px",background:i===0?AI_LIGHT:"#fff",cursor:"pointer"}}>
                 {i===0 && <div style={{textAlign:"right",marginBottom:"5px"}}><Badge bg={AI_COLOR} color="#fff">🥇 1순위 추천</Badge></div>}
                 <div style={{display:"flex",gap:"10px"}}>
                   <Img w="70px" h="70px" label={r.name} radius="9px"/>
