@@ -7,7 +7,7 @@ import { G, PRIMARY } from '../../shared/constants';
 
 import { apiFetch } from '../../shared/api/apiClient';
 import { logout } from '../../shared/api/authApi';
-import { getUserId } from '../../shared/utils/user';
+import { getUserId, getUserName, getLoginId } from '../../shared/utils/user';
 
 export default function MyPage() {
   const navigate = useNavigate();
