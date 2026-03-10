@@ -104,5 +104,6 @@ export const reissueToken = async () => {
  */
 export const logout = () => {
   clearTokens();
+  clearUsers();
   window.location.href = '/auth/login';
 };
