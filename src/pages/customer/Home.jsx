@@ -8,8 +8,8 @@ import { G, PRIMARY, AI_COLOR } from '../../shared/constants';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
 
-// import { getNearbyStores } from '../../shared/api/storeApi';
-import { getStores } from '../../shared/api/storeApi';
+import { getNearbyStores } from '../../shared/api/storeApi';
+// import { getStores } from '../../shared/api/storeApi';
 
 function Stars({ v = 4.5, size = 12 }) {
   return (
@@ -134,12 +134,22 @@ export default function Home() {
         //   size: 10,
         //   categoryId: cat
         // });
-
-        const res = await getStores({
-          page: 0,
-          size: 10,
-          categoryId: cat
-        });
+        let res;
+        try {
+          res = await getNearbyStores({
+            page: 0,
+            size: 10,
+            categoryId: cat
+          });
+        } catch (e) {
+          if (e.message === 'NOT_FOUND_ADDRESS') {
+            alert('기본 배송지가 설정되어 있지 않습니다. 배송지를 먼저 등록해주세요.');
+            navigate('/customer/address-sheet');
+            return;
+          } else {
+            throw e;
+          }
+        }
 
         if (!res.ok) {
           const bodyText = await res.text().catch(() => '');
