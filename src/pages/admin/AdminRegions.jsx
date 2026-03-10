@@ -4,14 +4,14 @@
 import { AdminShell, SearchBar } from "../../shared/components";
 import { G } from "../../shared/constants";
 
-export default function AdminRegions({ go }) {
+export default function AdminRegions() {
   const regions = [
     { name:"서울 종로구", zones:["광화문","경복궁","종로"], stores:127 },
     { name:"서울 강남구", zones:["강남","역삼","선릉"],     stores:342 },
     { name:"서울 마포구", zones:["홍대","합정","상수"],     stores:198 },
   ];
   return (
-    <AdminShell title="지역 관리" go={go}>
+    <AdminShell title="지역 관리" back="/admin">
       <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:"9px"}}>
         <SearchBar placeholder="지역명, 구역 검색"/>
         {regions.map((r,i) => (

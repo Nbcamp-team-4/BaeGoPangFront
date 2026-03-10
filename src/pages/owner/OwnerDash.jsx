@@ -5,6 +5,7 @@ import { Phone, TopBar, Btn } from "../../shared/components";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { G, PRIMARY, PRIMARY_LIGHT } from "../../shared/constants";
 import { Icon } from "../../shared/icons";
+import { useNavigate } from "react-router-dom";
 
 function Stars({ v=4.5 }) {
   return <span style={{color:"#FFC107",fontSize:"12px"}}>{"★".repeat(Math.floor(v))}{"☆".repeat(5-Math.floor(v))}</span>;
@@ -16,10 +17,11 @@ const hourlyData = [
   {t:"18시",v:112},{t:"19시",v:178},{t:"20시",v:156},{t:"21시",v:98},{t:"22시",v:34},
 ];
 
-export default function OwnerDash({ go }) {
+export default function OwnerDash() {
+  const navigate = useNavigate();
   return (
     <Phone noNav>
-      <TopBar title="🏪 사장님 홈" go={go} backTo="home"/>
+      <TopBar title="🏪 사장님 홈" />
       <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",flexDirection:"column",gap:"14px"}}>
         {/* 가게 요약 */}
         <div style={{padding:"13px",background:PRIMARY_LIGHT,borderRadius:"11px",border:`1.5px solid ${PRIMARY}33`}}>
@@ -45,7 +47,7 @@ export default function OwnerDash({ go }) {
           </div>
         </div>
         {/* 매출 차트 */}
-        <div onClick={()=>go("owner-sales")} style={{background:"#fff",border:`1.5px solid ${G[200]}`,borderRadius:"13px",padding:"14px",cursor:"pointer"}}>
+        <div onClick={()=>navigate("/owner/sales-detail")} style={{background:"#fff",border:`1.5px solid ${G[200]}`,borderRadius:"13px",padding:"14px",cursor:"pointer"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
             <div style={{fontSize:"14px",fontWeight:800,color:G[900]}}>시간대별 매출</div>
             <div style={{display:"flex",alignItems:"center",gap:"5px"}}><span style={{fontSize:"11px",color:PRIMARY,fontWeight:700}}>상세 보기</span>{Icon.chevron(PRIMARY)}</div>
@@ -62,8 +64,14 @@ export default function OwnerDash({ go }) {
         </div>
         {/* 빠른 메뉴 */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"7px"}}>
-          {[{icon:"📋",l:"주문관리",g:"owner-orders"},{icon:"🍽️",l:"메뉴관리",g:"owner-menu"},{icon:"⭐",l:"리뷰관리",g:"owner-reviews"},{icon:"🏪",l:"가게정보",g:"owner-info"},{icon:"👤",l:"마이페이지",g:"owner-my"}].map((m,i) => (
-            <div key={i} onClick={()=>go(m.g)} style={{padding:"14px",border:`1.5px solid ${G[200]}`,borderRadius:"11px",textAlign:"center",cursor:"pointer",background:"#fff"}}>
+          {[
+            {icon:"📋",l:"주문관리",to:"/owner/orders"},
+            {icon:"🍽️",l:"메뉴관리",to:"/owner/menu"},
+            {icon:"⭐",l:"리뷰관리",to:"/owner/reviews"},
+            {icon:"🏪",l:"가게정보",to:"/owner/info"},
+            {icon:"👤",l:"마이페이지",to:"/owner/mypage"},
+          ].map((m,i) => (
+            <div key={i} onClick={()=>navigate(m.to)} style={{padding:"14px",border:`1.5px solid ${G[200]}`,borderRadius:"11px",textAlign:"center",cursor:"pointer",background:"#fff"}}>
               <div style={{fontSize:"26px",marginBottom:"3px"}}>{m.icon}</div>
               <div style={{fontSize:"12px",fontWeight:700,color:G[800]}}>{m.l}</div>
             </div>

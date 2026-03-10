@@ -18,7 +18,7 @@ function Stars({ v = 4.5, size = 12 }) {
   );
 }
 
-export default function Home({ go }) {
+export default function Home() {
   // 라우터
   const navigate = useNavigate();
   // 카테고리
@@ -33,7 +33,8 @@ export default function Home({ go }) {
   ];
 
   const [categories, setCategories] = useState(mockCats);
-  const [cat, setCat] = useState(null); // null = 전체
+  const [cat, setCat] = useState(null);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -41,10 +42,21 @@ export default function Home({ go }) {
           method: 'GET'
         });
 
-        const data = res.data?.content ?? res.data ?? [];
-        alert(JSON.stringify(data));
+        console.log('카테고리 전체 응답:', res.data);
+
+        const rawList = res?.data?.data?.content ?? res?.data?.content ?? [];
+
+        const categoryList = Array.isArray(rawList) ? rawList : [];
+
+        const normalizedCategories = categoryList.map((item) => ({
+          id: item.id,
+          name: item.name,
+          icon: ''
+        }));
+
+        setCategories([{ id: null, name: '전체', icon: '' }, ...normalizedCategories]);
+
         console.log('성공적으로 카테고리를 불러왔습니다.');
-        setCategories([{ id: null, name: '전체', icon: '' }, ...data]);
       } catch (e) {
         console.error('카테고리 조회 실패', e);
       }

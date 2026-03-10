@@ -4,8 +4,11 @@
 import { useState } from "react";
 import { Phone, TopBar, Btn, Divider } from "../../shared/components";
 import { G, PRIMARY, PRIMARY_LIGHT } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
-export default function Cart({ go }) {
+export default function Cart() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const stores = [
     { name:"맛있는 한식당", items:[{name:"김치찌개",opt:"공기밥 포함",price:8000,qty:1},{name:"불고기 정식",opt:"밥+국+반찬3종",price:12000,qty:2}], fee:2000 },
     { name:"엄마손 분식",   items:[{name:"떡볶이",opt:"매운맛",price:5000,qty:1}], fee:1000 },
@@ -23,8 +26,8 @@ export default function Cart({ go }) {
   const totalFee   = stores.reduce((acc,s,si)=>acc+(checked[si]?s.fee:0),0);
 
   return (
-    <Phone navActive="cart" go={go}>
-      <TopBar title="🛒 장바구니" go={go} backTo="home"/>
+    <Phone navActive="cart">
+      <TopBar title="🛒 장바구니" backTo="/customer/home"/>
       <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",flexDirection:"column",gap:"12px"}}>
         {stores.map((s,si) => (
           <div key={si} style={{border:`1.5px solid ${checked[si]?PRIMARY:G[200]}`,borderRadius:"13px",overflow:"hidden"}}>
@@ -57,7 +60,7 @@ export default function Cart({ go }) {
           <Divider/>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:"16px",fontWeight:900,marginTop:"7px"}}><span>결제예정</span><span style={{color:PRIMARY}}>{(totalGoods+totalFee).toLocaleString()}원</span></div>
         </div>
-        <Btn variant="primary" full size="lg" onClick={()=>go("order")}>전체 주문하기</Btn>
+        <Btn variant="primary" full size="lg" onClick={()=>goTo("order")}>전체 주문하기</Btn>
       </div>
     </Phone>
   );
