@@ -1,5 +1,5 @@
 import { setAccessToken, setRefreshToken, getRefreshToken, clearTokens } from '../utils/token';
-import { setLoginId, setRoles, setUserName, clearUsers } from '../utils/user';
+import { setUserId, setLoginId, setRoles, setUserName, clearUsers } from '../utils/user';
 const API_BASE_URL = 'http://localhost:8080';
 
 /**
@@ -27,6 +27,7 @@ export const login = async (loginId, password) => {
   const refreshToken = data.refreshToken ?? data.data?.refreshToken;
 
   const user = data.user ?? data.data?.user;
+  const userId = user?.id;
   const userLoginId = user?.loginId;
   const userName = user?.name;
   const userRoles = user?.roles;
@@ -37,6 +38,10 @@ export const login = async (loginId, password) => {
 
   if (refreshToken) {
     setRefreshToken(refreshToken);
+  }
+
+  if (userId) {
+    setUserId(userId);
   }
 
   if (userLoginId) {
