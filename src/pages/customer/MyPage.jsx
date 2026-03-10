@@ -7,7 +7,7 @@ import { G, PRIMARY } from '../../shared/constants';
 
 import { apiFetch } from '../../shared/api/apiClient';
 import { logout } from '../../shared/api/authApi';
-import { getUserId } from '../../shared/utils/user';
+import { getUserId, getUserName, getLoginId } from '../../shared/utils/user';
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -71,8 +71,8 @@ export default function MyPage() {
   }, []);
 
   const handleSaveProfile = async () => {
-    const loginId = getLoginId();
-    if (!loginId) {
+    const id = getUserId();
+    if (!id) {
       setSaveError('로그인 정보가 없습니다.');
       return;
     }
@@ -81,7 +81,7 @@ export default function MyPage() {
     setSaveError(null);
 
     try {
-      const res = await apiFetch(`/api/users/${loginId}`, {
+      const res = await apiFetch(`/api/users/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({
           name: draft.name,

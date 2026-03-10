@@ -1,7 +1,7 @@
 import { setAccessToken, setRefreshToken, getRefreshToken, clearTokens } from '../utils/token';
 import { setUserId, setLoginId, setRoles, setUserName, clearUsers } from '../utils/user';
 const API_BASE_URL = 'http://localhost:8080';
-
+import { getUser } from './userApi';
 /**
  * 로그인
  */
@@ -21,12 +21,15 @@ export const login = async (loginId, password) => {
 
   if (!response.ok) {
     throw new Error(data.message || '로그인 실패');
+  } else {
+    console.log('로그인 성공 응답:', data);
   }
 
   const accessToken = data.accessToken ?? data.data?.accessToken;
   const refreshToken = data.refreshToken ?? data.data?.refreshToken;
 
-  const user = data.user ?? data.data?.user;
+  alert('로그인 응답 데이터:', data);
+  const user = data.user;
   const userId = user?.id;
   const userLoginId = user?.loginId;
   const userName = user?.name;
@@ -104,5 +107,6 @@ export const reissueToken = async () => {
  */
 export const logout = () => {
   clearTokens();
+  clearUsers();
   window.location.href = '/auth/login';
 };
