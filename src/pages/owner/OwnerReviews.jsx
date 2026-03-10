@@ -6,7 +6,7 @@ import { Phone, TopBar, Btn, Badge } from "../../shared/components";
 import { FlatIcons } from "../../shared/icons";
 import { G, PRIMARY, AI_COLOR, AI_LIGHT } from "../../shared/constants";
 import { generateAiReviewReply } from "../../shared/api/aiApi";
-import api from "../../config/api";
+import { apiFetch } from "../../shared/api/apiClient";
 
 function Stars({ v }) {
   return (
@@ -21,6 +21,11 @@ const [reviews, setReviews] = useState([]); // 상태로 관리
 const [storeInfo, setStoreInfo] = useState(null); // 실제 DB의 가게 정보 저장
 const [loading, setLoading] = useState(true);
 
+// reply / AI 관련 상태 (원본 remixed 파일에서 복사)
+const [replyTarget, setReplyTarget] = useState(null);
+const [aiLoading, setAiLoading] = useState(false);
+const [replyText, setReplyText] = useState("");
+const [aiGenerated, setAiGenerated] = useState(false);
 
 const currentUserId = "11111111-1111-1111-1111-111111111111";
 
@@ -30,19 +35,20 @@ useEffect(() => {
         setLoading(true);
 
         // 1. [실제 연동] 내 가게 목록 조회 (백엔드: GET /api/stores/my)
-        const storeRes = await api.get(`stores/my`, {
-          params: { userId: currentUserId } // 백엔드 @RequestParam UUID userId 대응
-        });
+        // apiFetch는 fetch 기반이라 query string을 직접 붙인다.
+        const storeRes = await apiFetch(`/api/stores/my?userId=${currentUserId}`);
+        const storeData = await storeRes.json();
 
         // 결과 목록 중 첫 번째 가게를 사용 (사장님은 보통 가게가 하나이므로)
-        const myStore = storeRes.data.content[0]; 
-        
+        const myStore = storeData.content?.[0];
+
         if (myStore) {
-          setStoreName(myStore.name);
+          setStoreInfo(myStore);
 
           // 2. [실제 연동] 가져온 실제 storeId로 리뷰 조회 (백엔드: GET /api/reviews/stores/{storeId})
-          const reviewRes = await api.get(`/api/reviews/stores/${myStore.id}`);
-          setReviews(reviewRes.data);
+          const reviewRes = await apiFetch(`/api/reviews/stores/${myStore.id}`);
+          const reviewsData = await reviewRes.json();
+          setReviews(reviewsData);
         }
       } catch (error) {
         console.error("데이터 연동 실패:", error);
