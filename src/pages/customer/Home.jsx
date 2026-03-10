@@ -8,7 +8,8 @@ import { G, PRIMARY, AI_COLOR } from '../../shared/constants';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
 
-import { getNearbyStores } from '../../shared/api/storeApi';
+// import { getNearbyStores } from '../../shared/api/storeApi';
+import { getStores } from '../../shared/api/storeApi';
 
 function Stars({ v = 4.5, size = 12 }) {
   return (
@@ -109,11 +110,17 @@ export default function Home() {
       speed: '15~25분'
     }
   ];
-  const [stores, setStores] = useState(mockStores);
+  const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log('가게 조회 요청 파라미터', {
+      page: 0,
+      size: 10,
+      categoryId: cat
+    });
+
     const fetchStores = async () => {
       if (!categoriesLoaded) return;
 
@@ -122,7 +129,13 @@ export default function Home() {
         setError(null);
         console.log('현재 활성화된 카테고리:', cat);
 
-        const res = await getNearbyStores({
+        // const res = await getNearbyStores({
+        //   page: 0,
+        //   size: 10,
+        //   categoryId: cat
+        // });
+
+        const res = await getStores({
           page: 0,
           size: 10,
           categoryId: cat
@@ -154,11 +167,11 @@ export default function Home() {
               : (s.speed ?? '')
         }));
 
-        setStores(normalized.length ? normalized : mockStores);
+        setStores(normalized);
       } catch (e) {
         console.error('가게 조회 실패', e);
         setError(e);
-        setStores(mockStores);
+        setStores([]);
       } finally {
         setLoading(false);
       }
@@ -254,7 +267,10 @@ export default function Home() {
             {stores.map((s, i) => (
               <div
                 key={i}
-                onClick={() => navigate(`/customer/store?storeId=${s.id}`)}
+                onClick={() => {
+                  if (!s?.id) return;
+                  navigate(`/customer/store?storeId=${s.id}`);
+                }}
                 style={{
                   border: `1.5px solid ${G[200]}`,
                   borderRadius: '13px',

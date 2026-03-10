@@ -11,8 +11,25 @@ export const getAddresses = async () => {
 export const getDefaultAddress = async () => {
   const addressRes = await getAddresses();
   const addressJson = await addressRes.json();
-  const addressList = addressJson?.content ?? addressJson?.data?.content ?? [];
 
-  const defaultAddress = addressList.find((addr) => addr.isDefault === true);
-  return defaultAddress || null;
+  console.log('주소 전체 응답:', addressJson);
+
+  const addressList = addressJson?.data?.content ?? addressJson?.content ?? addressJson?.data ?? [];
+
+  console.log('파싱된 주소 목록:', addressList);
+
+  if (!Array.isArray(addressList) || addressList.length === 0) {
+    return null;
+  }
+
+  const defaultAddress =
+    addressList.find((addr) => addr.isDefault === true) ??
+    addressList.find((addr) => addr.isDefault === 'true') ??
+    addressList.find((addr) => addr.default === true) ??
+    addressList.find((addr) => addr.default === 'true') ??
+    addressList[0];
+
+  console.log('기본 주소:', defaultAddress);
+
+  return defaultAddress;
 };
