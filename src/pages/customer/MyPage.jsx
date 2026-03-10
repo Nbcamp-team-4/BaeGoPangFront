@@ -6,16 +6,92 @@ import { Phone, TopBar, Badge } from "../../shared/components";
 import { FlatIcons, Icon } from "../../shared/icons";
 import { G, PRIMARY } from "../../shared/constants";
 
+import {
+  getMyPage,
+  updateMyProfile,
+  updateNotification,
+  logout,
+} from "../../shared/api/mypage";
+
 export default function MyPage({ go }) {
   const [noti, setNoti] = useState(true);
   const [editProfile, setEditProfile] = useState(false);
   const [profile, setProfile] = useState({ name:"홍길동", nick:"user123", phone:"010-1234-5678" });
-  const [draft,   setDraft]   = useState({...profile});
   const menuGroups = [
     { title:"주문 관리", items:[{icon:FlatIcons.orders(G[600]),label:"주문 내역",go:"order-history"},{icon:FlatIcons.heart(G[600]),label:"찜한 가게",badge:"3"},{icon:FlatIcons.review(G[600]),label:"내 리뷰",badge:"12"}] },
     { title:"혜택",     items:[{icon:FlatIcons.coupon(G[600]),label:"쿠폰",badge:"1",badgeColor:PRIMARY},{icon:FlatIcons.point(G[600]),label:"포인트",sub:"1,200P"}] },
     { title:"설정",     items:[{icon:FlatIcons.bell(G[600]),label:"알림 설정",toggle:true,val:noti,set:setNoti},{icon:FlatIcons.lock(G[600]),label:"개인정보 보호"},{icon:FlatIcons.notice(G[600]),label:"공지사항 / 고객센터"}] },
   ];
+
+
+  const [draft, setDraft] = useState({
+    name: "",
+    nick: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    fetchMyPage();
+  }, []);
+
+  async function fetchMyPage() {
+    try {
+      setLoading(true);
+      const data = await getMyPage();
+
+      setProfile({
+        name: data.name ?? "",
+        nick: data.nick ?? "",
+        phone: data.phone ?? "",
+        role: data.role ?? "CUSTOMER",
+        orderCount: data.orderCount ?? 0,
+        reviewCount: data.reviewCount ?? 0,
+        favoriteStoreCount: data.favoriteStoreCount ?? 0,
+        point: data.point ?? 0,
+      });
+
+      setDraft({
+        name: data.name ?? "",
+        nick: data.nick ?? "",
+        phone: data.phone ?? "",
+      });
+
+      setNoti(Boolean(data.notificationEnabled));
+    } catch (e) {
+      console.error("마이페이지 조회 실패", e);
+      alert("마이페이지 정보를 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSaveProfile() {
+    try {
+      setSaving(true);
+
+      const updated = await updateMyProfile({
+        name: draft.name,
+        nick: draft.nick,
+        phone: draft.phone,
+      });
+
+      setProfile((prev) => ({
+        ...prev,
+        name: updated.name ?? draft.name,
+        nick: updated.nick ?? draft.nick,
+        phone: updated.phone ?? draft.phone,
+      }));
+
+      setEditProfile(false);
+      alert("프로필이 수정되었습니다.");
+    } catch (e) {
+      console.error("프로필 수정 실패", e);
+      alert("프로필 수정에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <Phone noNav>
       <TopBar title="마이페이지" go={go} backTo="home"/>
