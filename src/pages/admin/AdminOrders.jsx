@@ -6,7 +6,7 @@ import { Icon } from "../../shared/icons";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { G } from "../../shared/constants";
 
-export default function AdminOrders({ go }) {
+export default function AdminOrders() {
   const weekData = [{d:"월",v:320},{d:"화",v:410},{d:"수",v:380},{d:"목",v:510},{d:"금",v:620},{d:"토",v:780},{d:"일",v:540}];
   const orders   = [
     { id:"ORD-2391", store:"맛있는 한식당", amount:"32,000", status:"배달중", statusColor:"#1565C0", statusBg:"#E3F2FD" },
@@ -14,7 +14,7 @@ export default function AdminOrders({ go }) {
     { id:"ORD-2389", store:"황금 중식당",   amount:"28,000", status:"취소",   statusColor:"#C62828", statusBg:"#FFEBEE" },
   ];
   return (
-    <AdminShell title="주문 관리" go={go}>
+    <AdminShell title="주문 관리" back="/admin">
       <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:"10px"}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"7px"}}>
           {[{l:"오늘 주문",v:"2,391"},{l:"진행 중",v:"847"},{l:"취소율",v:"2.3%"}].map((s,i) =>

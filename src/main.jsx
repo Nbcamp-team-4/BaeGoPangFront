@@ -1,6 +1,6 @@
-import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
-import "./App.css";
+import ReactDOM from 'react-dom/client';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import './App.css';
 /* toss */
 import { BrandpayCheckoutPage } from './pages/toss/brandpay/BrandpayCheckout';
 import { FailPage } from './pages/Fail';
@@ -56,8 +56,8 @@ import NotFound from './pages/NotFound'; // 추가
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Navigate to="/auth/login" replace />,
+    path: '/',
+    element: <Navigate to="/auth/login" replace />
   },
 
   // 건들지 말것

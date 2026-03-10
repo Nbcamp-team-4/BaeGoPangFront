@@ -5,9 +5,11 @@ import { useEffect, useState } from 'react';
 import { Phone, Chip, Img, Badge, Section } from '../../shared/components';
 import { Icon } from '../../shared/icons';
 import { G, PRIMARY, AI_COLOR } from '../../shared/constants';
-
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
+
+// import { getNearbyStores } from '../../shared/api/storeApi';
+import { getStores } from '../../shared/api/storeApi';
 
 function Stars({ v = 4.5, size = 12 }) {
   return (
@@ -18,7 +20,7 @@ function Stars({ v = 4.5, size = 12 }) {
   );
 }
 
-export default function Home({ go }) {
+export default function Home() {
   // 라우터
   const navigate = useNavigate();
   // 카테고리
@@ -33,7 +35,8 @@ export default function Home({ go }) {
   ];
 
   const [categories, setCategories] = useState(mockCats);
-  const [cat, setCat] = useState(null); // null = 전체
+  const [cat, setCat] = useState(null);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -41,12 +44,30 @@ export default function Home({ go }) {
           method: 'GET'
         });
 
-        const data = res.data?.content ?? res.data ?? [];
-        alert(JSON.stringify(data));
+        if (!res.ok) {
+          const bodyText = await res.text().catch(() => '');
+          throw new Error(`categories request failed: ${res.status} ${res.statusText} ${bodyText}`);
+        }
+
+        const json = await res.json();
+        console.log('카테고리 전체 응답:', json);
+
+        const rawList = json?.data?.content ?? json?.content ?? json?.data ?? [];
+        const categoryList = Array.isArray(rawList) ? rawList : [];
+
+        const normalizedCategories = categoryList.map((item) => ({
+          id: item.id,
+          name: item.name,
+          icon: ''
+        }));
+
+        setCategories([{ id: null, name: '전체', icon: '' }, ...normalizedCategories]);
+        setCategoriesLoaded(true);
+
         console.log('성공적으로 카테고리를 불러왔습니다.');
-        setCategories([{ id: null, name: '전체', icon: '' }, ...data]);
       } catch (e) {
         console.error('카테고리 조회 실패', e);
+        setCategoriesLoaded(true);
       }
     };
 
@@ -56,6 +77,7 @@ export default function Home({ go }) {
   // 가게 데이터
   const mockStores = [
     {
+      id: 'mock-1',
       name: '맛있는 한식당',
       cat: '한식',
       rating: 4.7,
@@ -66,6 +88,7 @@ export default function Home({ go }) {
       speed: '25~35분'
     },
     {
+      id: 'mock-2',
       name: '황금 중식당',
       cat: '중식',
       rating: 4.4,
@@ -76,6 +99,7 @@ export default function Home({ go }) {
       speed: '30~40분'
     },
     {
+      id: 'mock-3',
       name: '엄마손 분식',
       cat: '분식',
       rating: 4.9,
@@ -86,28 +110,75 @@ export default function Home({ go }) {
       speed: '15~25분'
     }
   ];
-
-  const [stores, setStores] = useState(mockStores);
+  const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   useEffect(() => {
+    console.log('가게 조회 요청 파라미터', {
+      page: 0,
+      size: 10,
+      categoryId: cat
+    });
+
     const fetchStores = async () => {
+      if (!categoriesLoaded) return;
+
       try {
-        // const data = await apiFetch('/api/stores/nearby', {
-        //   method: 'GET',
-        //
+        setLoading(true);
+        setError(null);
+        console.log('현재 활성화된 카테고리:', cat);
+
+        // const res = await getNearbyStores({
+        //   page: 0,
+        //   size: 10,
+        //   categoryId: cat
         // });
 
-        setStores(data.data ?? mockStores);
+        const res = await getStores({
+          page: 0,
+          size: 10,
+          categoryId: cat
+        });
+
+        if (!res.ok) {
+          const bodyText = await res.text().catch(() => '');
+          throw new Error(`stores request failed: ${res.status} ${res.statusText} ${bodyText}`);
+        }
+
+        const json = await res.json();
+        console.log('가게 전체 응답:', json);
+
+        const rawList = json?.data?.content ?? json?.content ?? json?.data ?? [];
+        const list = Array.isArray(rawList) ? rawList : [];
+
+        const normalized = list.map((s) => ({
+          id: s.id ?? s.storeId,
+          name: s.name ?? s.storeName ?? '가게',
+          cat: s.categoryName ?? s.category ?? '',
+          rating: s.averageRating ?? s.rating ?? 0,
+          reviews: s.reviewCount ?? s.reviews ?? 0,
+          dist: s.distanceKm != null ? `${s.distanceKm}km` : (s.dist ?? ''),
+          minOrder: s.minimumOrderAmount != null ? s.minimumOrderAmount.toLocaleString() : (s.minOrder ?? ''),
+          fee: s.deliveryFee != null ? s.deliveryFee.toLocaleString() : (s.fee ?? ''),
+          speed:
+            s.deliveryMinMinutes != null && s.deliveryMaxMinutes != null
+              ? `${s.deliveryMinMinutes}~${s.deliveryMaxMinutes}분`
+              : (s.speed ?? '')
+        }));
+
+        setStores(normalized);
       } catch (e) {
-        console.error(e);
+        console.error('가게 조회 실패', e);
+        setError(e);
+        setStores([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStores();
-  }, []);
+  }, [categoriesLoaded, cat]);
 
   return (
     <Phone navActive="home">
@@ -196,7 +267,10 @@ export default function Home({ go }) {
             {stores.map((s, i) => (
               <div
                 key={i}
-                onClick={() => navigate('/customer/ai-recommend')}
+                onClick={() => {
+                  if (!s?.id) return;
+                  navigate(`/customer/store?storeId=${s.id}`);
+                }}
                 style={{
                   border: `1.5px solid ${G[200]}`,
                   borderRadius: '13px',

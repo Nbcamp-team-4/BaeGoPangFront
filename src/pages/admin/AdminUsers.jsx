@@ -5,7 +5,7 @@ import { AdminShell, SearchBar, StatCard, THead, TRow, Badge } from "../../share
 import { Icon } from "../../shared/icons";
 import { G, PRIMARY, PRIMARY_LIGHT } from "../../shared/constants";
 
-export default function AdminUsers({ go }) {
+export default function AdminUsers() {
   const users = [
     { name:"user123", role:"고객",   date:"2025-01-12", status:"정상" },
     { name:"owner01", role:"사장님", date:"2025-01-08", status:"정상" },
@@ -13,7 +13,7 @@ export default function AdminUsers({ go }) {
     { name:"user789", role:"고객",   date:"2025-02-14", status:"정상" },
   ];
   return (
-    <AdminShell title="사용자 관리" go={go}>
+    <AdminShell title="사용자 관리" back="/admin">
       <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:"10px"}}>
         <SearchBar placeholder="이름, 이메일, ID 검색"/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"7px"}}>

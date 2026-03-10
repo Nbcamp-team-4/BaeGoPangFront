@@ -4,11 +4,11 @@
 import { Phone, TopBar, Btn, Badge } from "../../shared/components";
 import { G, PRIMARY } from "../../shared/constants";
 
-export default function OwnerMenu({ go }) {
+export default function OwnerMenu() {
   const items = [{name:"김치찌개",price:"8,000원",ai:true,hidden:false},{name:"된장찌개",price:"7,500원",ai:false,hidden:false},{name:"냉면",price:"9,000원",ai:false,hidden:true}];
   return (
     <Phone noNav>
-      <TopBar title="메뉴 관리" go={go} backTo="owner-dash"/>
+      <TopBar title="메뉴 관리" backTo="/owner/dash"/>
       <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",flexDirection:"column",gap:"10px"}}>
         <Btn variant="primary" full>+ 새 메뉴 등록</Btn>
         {items.map((m,i) => (

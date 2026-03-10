@@ -5,7 +5,7 @@ import { AdminShell, StatCard, THead, TRow, Badge } from '../../shared/component
 import { Icon } from '../../shared/icons';
 import { G } from '../../shared/constants';
 
-export default function AdminReviews({ go }) {
+export default function AdminReviews() {
   const reviews = [
     {
       id: 'REV-501',
@@ -41,7 +41,7 @@ export default function AdminReviews({ go }) {
     );
   }
   return (
-    <AdminShell title="리뷰 관리" go={go}>
+    <AdminShell title="리뷰 관리" back="/admin">
       <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '7px' }}>
           {[

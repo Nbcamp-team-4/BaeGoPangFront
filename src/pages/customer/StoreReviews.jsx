@@ -5,12 +5,14 @@ import { useState } from "react";
 import { Phone, TopBar, Chip, Img } from "../../shared/components";
 import { FlatIcons } from "../../shared/icons";
 import { G, PRIMARY } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
 function Stars({ v=4.5, size=12 }) {
   return <span style={{color:"#FFC107",fontSize:`${size}px`}}>{"★".repeat(Math.floor(v))}{"☆".repeat(5-Math.floor(v))}</span>;
 }
 
-export default function StoreReviews({ go }) {
+export default function StoreReviews() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("전체");
   const filters = ["전체","5점","4점","3점 이하","사진 리뷰"];
   const reviews = [
@@ -19,8 +21,8 @@ export default function StoreReviews({ go }) {
     { user:"user999", rating:3, date:"2025-02-25", menu:"김치찌개", content:"맛은 평범했어요.", img:false, ownerReply:null },
   ];
   return (
-    <Phone navActive="home" go={go}>
-      <TopBar title="가게 리뷰" go={go} backTo="store"/>
+    <Phone navActive="home">
+      <TopBar title="가게 리뷰" backTo="/customer/store"/>
       <div style={{flex:1,overflowY:"auto"}}>
         {/* 평점 요약 */}
         <div style={{padding:"14px",borderBottom:`1px solid ${G[100]}`,background:"#fff",display:"flex",flexDirection:"column",gap:"12px"}}>
