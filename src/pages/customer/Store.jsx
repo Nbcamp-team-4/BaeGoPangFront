@@ -21,10 +21,10 @@ export default function Store() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const storeId = searchParams.get('storeId') || '1';
+  const storeId = searchParams.get('storeId');
 
   const [store, setStore] = useState(null);
-  const [activeMenu, setActiveMenu] = useState('인기메뉴');
+  const [activeMenu, setActiveMenu] = useState('전체');
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -32,8 +32,8 @@ export default function Store() {
   const go = (target) => {
     const routeMap = {
       home: '/customer/home',
-      'store-reviews': `/customer/store-reviews?storeId=${storeId}`,
-      'menu-detail': `/customer/menu-detail?storeId=${storeId}`,
+      'store-reviews': storeId ? `/customer/store-reviews?storeId=${storeId}` : '/customer/store-reviews',
+      'menu-detail': storeId ? `/customer/menu-detail?storeId=${storeId}` : '/customer/menu-detail',
       cart: '/customer/cart',
       order: '/customer/order',
       mypage: '/customer/mypage'
@@ -58,7 +58,7 @@ export default function Store() {
         setLiked(Boolean(data?.liked));
 
         const firstCategory =
-          Array.isArray(data?.menuCategories) && data.menuCategories.length > 0 ? data.menuCategories[0] : '인기메뉴';
+          Array.isArray(data?.menuCategories) && data.menuCategories.length > 0 ? data.menuCategories[0] : '전체';
 
         setActiveMenu(firstCategory);
       } catch (err) {
@@ -79,6 +79,7 @@ export default function Store() {
 
   const filteredMenus = useMemo(() => {
     if (!store?.menus) return [];
+    if (activeMenu === '전체') return store.menus;
     return store.menus.filter((menu) => menu.category === activeMenu);
   }, [store, activeMenu]);
 
@@ -300,13 +301,19 @@ export default function Store() {
                   fontSize: '13px',
                   background: '#fff'
                 }}>
-                해당 카테고리의 메뉴가 없습니다.
+                등록된 메뉴가 없습니다.
               </div>
             ) : (
               filteredMenus.map((menu) => (
                 <div
                   key={menu.id}
-                  onClick={() => navigate(`/customer/menu-detail?storeId=${storeId}&menuId=${menu.id}`)}
+                  onClick={() =>
+                    navigate(
+                      storeId
+                        ? `/customer/menu-detail?storeId=${storeId}&menuId=${menu.id}`
+                        : `/customer/menu-detail?menuId=${menu.id}`
+                    )
+                  }
                   style={{
                     border: `1.5px solid ${G[200]}`,
                     borderRadius: '11px',
