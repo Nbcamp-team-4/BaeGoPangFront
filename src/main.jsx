@@ -30,6 +30,7 @@ import OrderHistory from './pages/customer/OrderHistory';
 import OrderDetail from './pages/customer/OrderDetail';
 import Review from './pages/customer/Review';
 import MyPage from './pages/customer/MyPage';
+import AddressSheet from './pages/customer/AddressSheet';
 
 /* owner */
 import OwnerDash from './pages/owner/OwnerDash';
@@ -173,6 +174,7 @@ const router = createBrowserRouter([
         path: 'order-detail',
         element: <OrderDetail />
       },
+      { path: 'address-sheet', element: <AddressSheet /> },
       {
         path: 'review',
         element: <Review />
