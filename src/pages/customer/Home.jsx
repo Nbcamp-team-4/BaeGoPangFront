@@ -9,6 +9,8 @@ import { G, PRIMARY, AI_COLOR } from '../../shared/constants';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
 
+import { getStores } from '../../shared/api/storeApi';
+
 function Stars({ v = 4.5, size = 12 }) {
   return (
     <span style={{ color: '#FFC107', fontSize: `${size}px` }}>
@@ -19,7 +21,7 @@ function Stars({ v = 4.5, size = 12 }) {
 }
 
 export default function Home() {
-  // 라우터ㅜ
+  // 라우터
   const navigate = useNavigate();
   // 카테고리
   const mockCats = [
@@ -34,13 +36,13 @@ export default function Home() {
 
   const [categories, setCategories] = useState(mockCats);
   const [cat, setCat] = useState(null);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await apiFetch('/api/categories', {
           method: 'GET'
         });
-        console.log('카테고리 전체 응답 객체:', res);
 
         if (!res.ok) {
           const bodyText = await res.text().catch(() => '');
@@ -48,10 +50,11 @@ export default function Home() {
         }
 
         const json = await res.json();
-
         console.log('카테고리 전체 응답:', json);
 
-        const categoryList = Array.isArray(json?.content) ? json.content : [];
+        const rawList = json?.data?.content ?? json?.content ?? json?.data ?? [];
+
+        const categoryList = Array.isArray(rawList) ? rawList : [];
 
         const normalizedCategories = categoryList.map((item) => ({
           id: item.id,
@@ -60,6 +63,8 @@ export default function Home() {
         }));
 
         setCategories([{ id: null, name: '전체', icon: '' }, ...normalizedCategories]);
+
+        console.log('성공적으로 카테고리를 불러왔습니다.');
       } catch (e) {
         console.error('카테고리 조회 실패', e);
       }
@@ -108,21 +113,51 @@ export default function Home() {
   useEffect(() => {
     const fetchStores = async () => {
       try {
-        // const data = await apiFetch('/api/stores/nearby', {
-        //   method: 'GET',
-        //
-        // });
+        setLoading(true);
+        setError(null);
 
-        setStores(data.data ?? mockStores);
+        const res = await getStores(cat);
+
+        // `getStores`는 내부 조건에 따라 [] 또는 fetch Response를 반환함
+        if (Array.isArray(res)) {
+          setStores(res.length ? res : mockStores);
+          return;
+        }
+
+        if (!res.ok) {
+          const bodyText = await res.text().catch(() => '');
+          throw new Error(`stores request failed: ${res.status} ${res.statusText} ${bodyText}`);
+        }
+
+        const json = await res.json();
+        console.log('가게 전체 응답:', json);
+
+        const rawList = json?.data?.content ?? json?.content ?? json?.data ?? [];
+        const list = Array.isArray(rawList) ? rawList : [];
+
+        const normalized = list.map((s) => ({
+          name: s.name ?? s.storeName ?? s.title ?? '가게',
+          cat: s.categoryName ?? s.category ?? s.cat ?? '',
+          rating: s.rating ?? s.averageRating ?? 0,
+          reviews: s.reviewCount ?? s.reviews ?? 0,
+          dist: s.distanceKm != null ? `${s.distanceKm}km` : s.dist ?? '',
+          minOrder: s.minOrderAmount != null ? s.minOrderAmount.toLocaleString() : s.minOrder ?? '',
+          fee: s.deliveryFee != null ? s.deliveryFee.toLocaleString() : s.fee ?? '',
+          speed: s.eta ?? s.speed ?? ''
+        }));
+
+        setStores(normalized.length ? normalized : mockStores);
       } catch (e) {
-        console.error(e);
+        console.error('가게 조회 실패', e);
+        setError(e);
+        setStores(mockStores);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStores();
-  }, []);
+  }, [cat]);
 
   return (
     <Phone navActive="home">

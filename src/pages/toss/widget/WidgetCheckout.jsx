@@ -1,7 +1,10 @@
-import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { loadTossPayments, ANONYMOUS } from '@tosspayments/tosspayments-sdk';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTotalPrice, createOrderFromCart } from '../../../shared/api/orderApi';
+import { getUser } from '../../../shared/api/userApi';
+import { getUserId } from '../../../shared/utils/user';
+import { getMyCart } from '../../../shared/api/cartApi';
 // ------  SDK 초기화 ------
 // @docs https://docs.tosspayments.com/sdk/v2/js#토스페이먼츠-초기화
 const clientKey = import.meta.env.VITE_TOSS_CLIENT_KEY;
@@ -11,12 +14,37 @@ export function WidgetCheckoutPage() {
   const navigate = useNavigate();
 
   const [amount, setAmount] = useState({
-    currency: "KRW",
-    value: 1000,
+    currency: 'KRW',
+    value: 0
   });
   const [ready, setReady] = useState(false);
   const [widgets, setWidgets] = useState(null);
 
+  // 1) 처음 화면 열릴 때 장바구니 금액 세팅
+  useEffect(() => {
+    async function fetchCartAmount() {
+      try {
+        const cartRes = await getMyCart();
+        const cartJson = await cartRes.json();
+
+        const totalPrice = await getTotalPrice(cartJson);
+        const deliveryFee = Number((cartJson?.data ?? cartJson)?.deliveryFee ?? 0);
+        // const finalAmount = totalPrice + deliveryFee;
+        const finalAmount = totalPrice;
+        console.log(finalAmount);
+        setAmount({
+          currency: 'KRW',
+          value: finalAmount
+        });
+      } catch (error) {
+        console.error('장바구니 금액 조회 실패:', error);
+      }
+    }
+
+    fetchCartAmount();
+  }, []);
+
+  // 2) Toss widgets 초기화
   useEffect(() => {
     async function fetchPaymentWidgets() {
       try {
@@ -25,20 +53,21 @@ export function WidgetCheckoutPage() {
         // 회원 결제
         // @docs https://docs.tosspayments.com/sdk/v2/js#tosspaymentswidgets
         const widgets = tossPayments.widgets({
-          customerKey,
+          customerKey
         });
         // 비회원 결제
         // const widgets = tossPayments.widgets({ customerKey: ANONYMOUS });
 
         setWidgets(widgets);
       } catch (error) {
-        console.error("Error fetching payment widget:", error);
+        console.error('Error fetching payment widget:', error);
       }
     }
 
     fetchPaymentWidgets();
   }, [clientKey, customerKey]);
 
+  // 3) amount가 준비된 뒤 위젯 렌더링
   useEffect(() => {
     async function renderPaymentWidgets() {
       if (widgets == null) {
@@ -47,26 +76,24 @@ export function WidgetCheckoutPage() {
 
       // ------  주문서의 결제 금액 설정 ------
       // TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
-      // TODO: renderPaymentMethods, renderAgreement, requestPayment 보다 반드시 선행되어야 합니다.
-      // @docs https://docs.tosspayments.com/sdk/v2/js#widgetssetamount
       await widgets.setAmount(amount);
 
       await Promise.all([
         // ------  결제 UI 렌더링 ------
         // @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrenderpaymentmethods
         widgets.renderPaymentMethods({
-          selector: "#payment-method",
+          selector: '#payment-method',
           // 렌더링하고 싶은 결제 UI의 variantKey
           // 결제 수단 및 스타일이 다른 멀티 UI를 직접 만들고 싶다면 계약이 필요해요.
           // @docs https://docs.tosspayments.com/guides/v2/payment-widget/admin#새로운-결제-ui-추가하기
-          variantKey: "DEFAULT",
+          variantKey: 'DEFAULT'
         }),
         // ------  이용약관 UI 렌더링 ------
         // @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrenderagreement
         widgets.renderAgreement({
-          selector: "#agreement",
-          variantKey: "AGREEMENT",
-        }),
+          selector: '#agreement',
+          variantKey: 'AGREEMENT'
+        })
       ]);
 
       setReady(true);
@@ -83,7 +110,7 @@ export function WidgetCheckoutPage() {
         {/* 이용약관 UI */}
         <div id="agreement" />
         {/* 쿠폰 체크박스 */}
-        <div style={{ paddingLeft: "30px" }}>
+        <div style={{ paddingLeft: '30px' }}>
           <div className="checkable typography--p">
             <label htmlFor="coupon-box" className="checkable__label typography--regular">
               <input
@@ -98,7 +125,7 @@ export function WidgetCheckoutPage() {
                   if (event.target.checked) {
                     await widgets.setAmount({
                       currency: amount.currency,
-                      value: amount.value - 5000,
+                      value: amount.value - 5000
                     });
 
                     return;
@@ -106,7 +133,7 @@ export function WidgetCheckoutPage() {
 
                   await widgets.setAmount({
                     currency: amount.currency,
-                    value: amount.value,
+                    value: amount.value
                   });
                 }}
               />
@@ -118,7 +145,7 @@ export function WidgetCheckoutPage() {
         {/* 결제하기 버튼 */}
         <button
           className="button"
-          style={{ marginTop: "30px" }}
+          style={{ marginTop: '30px' }}
           disabled={!ready}
           // ------ '결제하기' 버튼 누르면 결제창 띄우기 ------
           // @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrequestpayment
@@ -126,13 +153,30 @@ export function WidgetCheckoutPage() {
             try {
               // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
               // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
+              const totalPrice = await getTotalPrice();
+              const orderRes = await createOrderFromCart('');
+              const orderData = await orderRes.json();
+              const orderId = orderData.data.id;
+              const orderNo = orderData.data.orderNo;
+              const orderName = `배고팡 주문 #${orderNo}`;
+              console.log('orderId', orderId);
+              console.log('orderName', orderName);
+
+              const userRes = await getUser(getUserId());
+              const userJson = await userRes.json();
+              const userData = userJson?.data ?? userJson;
+              const customerEmail = userData.email;
+              const customerName = userData.name;
+              console.log('customerEmail', customerEmail);
+              console.log('customerName', customerName);
+
               await widgets.requestPayment({
-                orderId: "33d35f5f-e4e1-2323-aefd-a35db95b2341", // 고유 주문 번호
-                orderName: "토스 티셔츠 외 2건",
-                successUrl: window.location.origin + "/widget/success", // 결제 요청이 성공하면 리다이렉트되는 URL
-                failUrl: window.location.origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL
-                customerEmail: "customer123@gmail.com",
-                customerName: "김토스",
+                orderId: orderId, // 고유 주문 번호
+                orderName: orderName, // 주문명
+                successUrl: window.location.origin + '/widget/success', // 결제 요청이 성공하면 리다이렉트되는 URL
+                failUrl: window.location.origin + '/fail', // 결제 요청이 실패하면 리다이렉트되는 URL
+                customerEmail: customerEmail,
+                customerName: customerName
                 // 가상계좌 안내, 퀵계좌이체 휴대폰 번호 자동 완성에 사용되는 값입니다. 필요하다면 주석을 해제해 주세요.
                 // customerMobilePhone: "01012341234",
               });
@@ -140,35 +184,31 @@ export function WidgetCheckoutPage() {
               // 에러 처리하기
               console.error(error);
             }
-          }}
-        >
+          }}>
           결제하기
         </button>
       </div>
       <div
         className="box_section"
         style={{
-          padding: "40px 30px 50px 30px",
-          marginTop: "30px",
-          marginBottom: "50px",
-        }}
-      >
+          padding: '40px 30px 50px 30px',
+          marginTop: '30px',
+          marginBottom: '50px'
+        }}>
         <button
           className="button"
-          style={{ marginTop: "30px" }}
+          style={{ marginTop: '30px' }}
           onClick={() => {
-            navigate("/brandpay/checkout");
-          }}
-        >
+            navigate('/brandpay/checkout');
+          }}>
           위젯 없이 브랜드페이만 연동하기
         </button>
         <button
           className="button"
-          style={{ marginTop: "30px" }}
+          style={{ marginTop: '30px' }}
           onClick={() => {
-            navigate("/payment/checkout");
-          }}
-        >
+            navigate('/payment/checkout');
+          }}>
           위젯 없이 결제창만 연동하기
         </button>
       </div>

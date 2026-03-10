@@ -14,8 +14,8 @@ export const apiFetch = async (url, options = {}) => {
     headers['Content-Type'] = 'application/json';
   }
 
-  console.log('요청 URL', `${API_BASE_URL}${url}`);
-  console.log('accessToken', accessToken);
+  // console.log('요청 URL', `${API_BASE_URL}${url}`);
+  // console.log('accessToken', accessToken);
 
   let response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
