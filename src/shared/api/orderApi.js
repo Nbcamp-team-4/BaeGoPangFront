@@ -95,3 +95,13 @@ export const createOrderFromCart = async (requestMemo = '') => {
 export const getOrder = async (orderId) => {
   return await apiFetch(`/api/orders/${orderId}`);
 };
+
+export const cancelOrder = async (orderId, reason) => {
+  return await apiFetch(`/api/orders/${orderId}/cancel`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(reason)
+  });
+};
