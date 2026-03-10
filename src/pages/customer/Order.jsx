@@ -1,10 +1,10 @@
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  screens/customer/Order.jsx
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 import { useState } from 'react';
-import { Phone, TopBar, Btn, Input, Section, Radio, Divider } from '../../shared/components';
+
+import { Phone, TopBar, Btn, Section, Radio, Divider } from '../../shared/components';
 import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
-import { FlatIcons } from '../../shared/icons'; // FlatIcons가 공유 컴포넌트에 있다면
+import { FlatIcons } from '../../shared/icons';
+import AddressPage from './AddressSheet';
+
 export default function Order({ go }) {
   const [pay, setPay] = useState('card');
   const [cardType, setCardType] = useState('');
@@ -12,6 +12,16 @@ export default function Order({ go }) {
   const [cardPw, setCardPw] = useState('');
   const [cvc, setCvc] = useState('');
   const [expiry, setExpiry] = useState('');
+
+  // ── 주소 ──────────────────────────────────────────────
+  const [addrOpen, setAddrOpen] = useState(false);
+  const [selectedAddr, setSelectedAddr] = useState({
+    id: 1,
+    label: '집',
+    road: '서울 종로구 세종대로 172',
+    detail: '101호'
+  });
+
   const cardTypes = ['KB국민', '신한', '하나', '우리', '삼성', '현대', '롯데', 'NH농협', 'IBK기업', '씨티'];
 
   const fmtCardNum = (val, idx) => {
@@ -25,15 +35,22 @@ export default function Order({ go }) {
     setExpiry(d.length >= 3 ? d.slice(0, 2) + '/' + d.slice(2) : d);
   };
 
-  const [addrSheet, setAddrSheet] = useState(false);
-  const [selectedAddr, setSelectedAddr] = useState({
-    label: '집',
-    road: '서울 종로구 세종대로 172',
-    detail: '101호'
-  });
+  // AddressPage에서 "이 주소로 배달받기" 클릭 시
+  // → selectedAddr 객체 전체를 받아 상태 업데이트 후 주소 페이지 닫기
+  const handleAddrConfirm = (addr) => {
+    if (addr) setSelectedAddr(addr); // addr: { id, label, road, detail, selected }
+    setAddrOpen(false);
+  };
+
+  // 주소 선택 페이지가 열려 있으면 AddressPage 렌더링
+  if (addrOpen) {
+    return <AddressPage onBack={() => setAddrOpen(false)} onConfirm={handleAddrConfirm} />;
+  }
+
   return (
     <Phone navActive="cart" go={go}>
       <TopBar title="주문하기" go={go} backTo="cart" />
+
       <div
         style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {/* 주문 요약 */}
@@ -57,24 +74,40 @@ export default function Order({ go }) {
             <span>24,000원</span>
           </div>
         </div>
+
         {/* 배달 주소 */}
         <Section title="배달 주소">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-            <div
-              style={{
-                padding: '10px 12px',
-                border: `1.5px solid ${PRIMARY}`,
-                borderRadius: '9px',
-                background: PRIMARY_LIGHT,
-                fontSize: '12px',
-                fontWeight: 600,
-                color: PRIMARY
-              }}>
-              📌 서울 종로구 세종대로 172
+          <div
+            onClick={() => setAddrOpen(true)}
+            style={{
+              padding: '12px 13px',
+              border: `1.5px solid ${PRIMARY}`,
+              borderRadius: '11px',
+              background: PRIMARY_LIGHT,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: '8px'
+            }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+              {FlatIcons.location()}
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: PRIMARY, marginBottom: '2px' }}>
+                  {selectedAddr.label}
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: G[800] }}>{selectedAddr.road}</div>
+                {selectedAddr.detail && (
+                  <div style={{ fontSize: '11px', color: G[500], marginTop: '1px' }}>{selectedAddr.detail}</div>
+                )}
+              </div>
             </div>
-            <Input placeholder="상세 주소 (동·호수·층)" />
+            <span style={{ fontSize: '11px', color: PRIMARY, fontWeight: 700, flexShrink: 0, marginTop: '2px' }}>
+              변경 ›
+            </span>
           </div>
         </Section>
+
         {/* 결제 수단 */}
         <Section title="결제 수단">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
@@ -96,6 +129,7 @@ export default function Order({ go }) {
                     </span>
                   </div>
                 </Radio>
+
                 {m.v === 'card' && pay === 'card' && (
                   <div
                     style={{
@@ -256,6 +290,7 @@ export default function Order({ go }) {
             ))}
           </div>
         </Section>
+
         {/* 금액 요약 */}
         <div style={{ padding: '12px', background: G[50], borderRadius: '11px', border: `1px solid ${G[200]}` }}>
           <div
@@ -286,6 +321,8 @@ export default function Order({ go }) {
             <span style={{ color: PRIMARY }}>40,000원</span>
           </div>
         </div>
+
+        {/* 결제 버튼 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <Btn variant="primary" full size="lg" onClick={() => go('order-complete')}>
             40,000원 결제하기

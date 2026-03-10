@@ -5,14 +5,13 @@ import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
 import { Icon } from '../../shared/icons';
 
 // ── 주소 목록 페이지 ──────────────────────────────────────
-function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm }) {
+function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack }) {
   const selected = addrs.find((a) => a.selected);
 
   return (
     <Phone noNav>
-      <TopBar title="배달 주소" backTo="order" />
+      <TopBar title="배달 주소" backTo={onBack} />
 
-      {/* 주소 목록 */}
       <div
         style={{
           flex: 1,
@@ -43,7 +42,6 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm }) {
               cursor: 'pointer',
               transition: 'all .15s'
             }}>
-            {/* 라디오 */}
             <div
               style={{
                 width: '20px',
@@ -60,7 +58,6 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm }) {
               {a.selected && <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#fff' }} />}
             </div>
 
-            {/* 주소 정보 */}
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                 <span style={{ fontSize: '14px', fontWeight: 800, color: a.selected ? PRIMARY : G[900] }}>
@@ -76,7 +73,6 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm }) {
               {a.detail && <div style={{ fontSize: '12px', color: G[400], marginTop: '2px' }}>{a.detail}</div>}
             </div>
 
-            {/* 삭제 버튼 */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -95,7 +91,6 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm }) {
           </div>
         ))}
 
-        {/* 새 주소 추가 행 */}
         <div
           onClick={onGoAdd}
           style={{
@@ -126,9 +121,9 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm }) {
         </div>
       </div>
 
-      {/* 하단 확인 버튼 */}
       <div style={{ padding: '12px 16px 32px', flexShrink: 0, borderTop: `1px solid ${G[100]}` }}>
-        <Btn variant="primary" full size="lg" onClick={() => onConfirm(selected)}>
+        {/* selected가 없으면 비활성화 */}
+        <Btn variant="primary" full size="lg" disabled={!selected} onClick={() => onConfirm(selected)}>
           이 주소로 배달받기
         </Btn>
       </div>
@@ -149,7 +144,6 @@ function AddAddressFormPage({ onBack, onAdd }) {
     <Phone noNav>
       <TopBar title="새 주소 추가" backTo={onBack} />
 
-      {/* 입력 폼 */}
       <div
         style={{
           flex: 1,
@@ -190,7 +184,6 @@ function AddAddressFormPage({ onBack, onAdd }) {
         ))}
       </div>
 
-      {/* 하단 버튼 */}
       <div style={{ padding: '12px 18px 32px', flexShrink: 0 }}>
         <Btn variant="primary" full size="lg" disabled={!form.road.trim()} onClick={handleAdd}>
           주소 추가하기
@@ -200,7 +193,7 @@ function AddAddressFormPage({ onBack, onAdd }) {
   );
 }
 
-// ── 진입점: 페이지 라우팅 ─────────────────────────────────
+// ── 진입점 ────────────────────────────────────────────────
 export default function AddressPage({ onBack, onConfirm }) {
   const [page, setPage] = useState('list');
   const [addrs, setAddrs] = useState([
@@ -210,6 +203,7 @@ export default function AddressPage({ onBack, onConfirm }) {
 
   const select = (id) => setAddrs((a) => a.map((x) => ({ ...x, selected: x.id === id })));
   const remove = (id) => setAddrs((a) => a.filter((x) => x.id !== id));
+
   const handleAdd = (newAddr) => {
     const id = Date.now();
     setAddrs((a) => [...a.map((x) => ({ ...x, selected: false })), { id, ...newAddr, selected: true }]);
@@ -226,7 +220,7 @@ export default function AddressPage({ onBack, onConfirm }) {
       onSelect={select}
       onDelete={remove}
       onGoAdd={() => setPage('add')}
-      onConfirm={onConfirm}
+      onConfirm={onConfirm} // (selectedAddr) => void — 주소 객체 전달
       onBack={onBack}
     />
   );
