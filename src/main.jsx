@@ -52,6 +52,8 @@ import AdminAI from './pages/admin/AdminAI';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminReviews from './pages/admin/AdminReviews';
 
+import NotFound from './pages/NotFound'; // 추가
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -267,6 +269,10 @@ const router = createBrowserRouter([
   {
     path: 'fail',
     element: <FailPage />
+  },
+  {
+    path: '*',
+    element: <NotFound />
   }
 ]);
 
