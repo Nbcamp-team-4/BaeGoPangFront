@@ -1,10 +1,6 @@
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  screens/customer/OrderHistory.jsx
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, TopBar, Btn } from '../../shared/components';
-import { FlatIcons } from '../../shared/icons';
 import { G, PRIMARY } from '../../shared/constants';
 
 import { getMyOrders, cancelOrder } from '../../shared/api/orderApi';
@@ -131,10 +127,10 @@ export function RefundModal({ orderId, orderStore, orderAmount, onClose, onDone 
             fontSize: '12px',
             border: `1px solid ${G[200]}`
           }}>
-          <div style={{ fontWeight: 700, color: G[800] }}>{orderStore}</div>
+          <div style={{ fontWeight: 700, color: G[800] }}>{orderStore || '상점 정보 없음'}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
             <span>환불 예정 금액</span>
-            <span style={{ fontWeight: 800, color: '#1565C0' }}>{orderAmount}</span>
+            <span style={{ fontWeight: 800, color: '#1565C0' }}>{orderAmount?.toLocaleString()}원</span>
           </div>
         </div>
         <div>
@@ -250,7 +246,9 @@ export default function OrderHistory() {
   if (loading)
     return (
       <Phone go={go}>
-        <div style={{ padding: '50px', textAlign: 'center' }}>불러오는 중... 🍊</div>
+        <div style={{ padding: '100px 0', textAlign: 'center', fontSize: '14px', color: G[500] }}>
+          주문 내역을 불러오는 중... 🍱
+        </div>
       </Phone>
     );
 
@@ -269,7 +267,15 @@ export default function OrderHistory() {
       <TopBar title="주문 내역" go={go} backTo="customer/home" />
 
       <div
-        style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          background: G[50]
+        }}>
         {orders.length === 0 ? (
           <div style={{ textAlign: 'center', color: G[400], marginTop: '100px' }}>주문 내역이 없어요! 🍙</div>
         ) : (
@@ -277,22 +283,22 @@ export default function OrderHistory() {
             <div
               key={o.id}
               style={{
-                border: `1.5px solid ${G[200]}`,
+                border: `1px solid ${G[200]}`,
                 borderRadius: '12px',
-                padding: '15px',
+                padding: '16px',
                 background: '#fff',
-                position: 'relative'
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
               }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '15px', fontWeight: 800 }}>{o.storeName}</span>
+                <span style={{ fontSize: '15px', fontWeight: 800 }}>{o.storeName || '정보 없음'}</span>
                 <span
                   style={{
                     fontSize: '11px',
-                    fontWeight: 700,
-                    color: PRIMARY,
+                    fontWeight: 800,
+                    color: o.status === 'COMPLETED' ? '#1565C0' : PRIMARY,
                     padding: '3px 8px',
                     borderRadius: '6px',
-                    background: '#FFF3F0'
+                    background: o.status === 'COMPLETED' ? '#E3F2FD' : '#FFF3F0'
                   }}>
                   {getStatusLabel(o.status)}
                 </span>
