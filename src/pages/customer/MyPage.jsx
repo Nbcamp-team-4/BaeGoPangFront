@@ -4,12 +4,8 @@ import { Phone, TopBar, Badge } from '../../shared/components';
 import { FlatIcons, Icon } from '../../shared/icons';
 import { G, PRIMARY } from '../../shared/constants';
 
-import {
-  getMyPage,
-  updateMyProfile,
-  updateNotification,
-  logout,
-} from "../../shared/api/mypage";
+import { apiFetch } from '../../shared/api/apiClient';
+import { login } from '../../shared/api/authApi';
 
 export default function MyPage() { // ✅ 부모로부터 go를 받지 않고 내부에서 useNavigate 사용 추천
   const navigate = useNavigate();
@@ -20,77 +16,33 @@ export default function MyPage() { // ✅ 부모로부터 go를 받지 않고 �
   const [saving, setSaving] = useState(false);
   const [noti, setNoti] = useState(true);
   const [editProfile, setEditProfile] = useState(false);
-  
-  const [profile, setProfile] = useState({ 
-    name: '불러오는 중...', 
-    nick: '...', 
-    phone: '', 
-    orderCount: 0, 
-    reviewCount: 0, 
-    favoriteStoreCount: 0, 
-    point: 0 
-  });
-  const [draft, setDraft] = useState({ name: '', nick: '', phone: '' });
-
-  // 2. 초기 데이터 로드
-  useEffect(() => {
-    fetchMyPage();
-  }, []);
-
-  async function fetchMyPage() {
-    try {
-      setLoading(true);
-      const res = await getMyPage(); // 서버 응답 구조가 { success: true, data: { ... } } 라면 res.data 사용
-      const data = res.data || res;
-
-      const newProfile = {
-        name: data.name ?? "이름 없음",
-        nick: data.nick ?? "user",
-        phone: data.phone ?? "",
-        role: data.role ?? "CUSTOMER",
-        orderCount: data.orderCount ?? 0,
-        reviewCount: data.reviewCount ?? 0,
-        favoriteStoreCount: data.favoriteStoreCount ?? 0,
-        point: data.point ?? 0,
-      };
-
-      setProfile(newProfile);
-      setDraft({
-        name: newProfile.name,
-        nick: newProfile.nick,
-        phone: newProfile.phone,
-      });
-      setNoti(Boolean(data.notificationEnabled));
-    } catch (e) {
-      console.error("마이페이지 조회 실패", e);
-    } finally {
-      setLoading(false);
+  const [profile, setProfile] = useState({ name: '홍길동', nick: 'user123', phone: '010-1234-5678' });
+  const [draft, setDraft] = useState({ ...profile });
+  const menuGroups = [
+    {
+      title: '주문 관리',
+      items: [
+        { icon: FlatIcons.orders(G[600]), label: '주문 내역', go: 'order-history' },
+        { icon: FlatIcons.heart(G[600]), label: '찜한 가게', badge: '3' },
+        { icon: FlatIcons.review(G[600]), label: '내 리뷰', badge: '12' }
+      ]
+    },
+    {
+      title: '혜택',
+      items: [
+        { icon: FlatIcons.coupon(G[600]), label: '쿠폰', badge: '1', badgeColor: PRIMARY },
+        { icon: FlatIcons.point(G[600]), label: '포인트', sub: '1,200P' }
+      ]
+    },
+    {
+      title: '설정',
+      items: [
+        { icon: FlatIcons.bell(G[600]), label: '알림 설정', toggle: true, val: noti, set: setNoti },
+        { icon: FlatIcons.lock(G[600]), label: '개인정보 보호' },
+        { icon: FlatIcons.notice(G[600]), label: '공지사항 / 고객센터' }
+      ]
     }
-  }
-
-  // 3. 프로필 저장 로직
-  async function handleSaveProfile() {
-    try {
-      setSaving(true);
-      const res = await updateMyProfile(draft);
-      const updated = res.data || res;
-
-      setProfile((prev) => ({
-        ...prev,
-        ...updated
-      }));
-
-      setEditProfile(false);
-      alert("프로필이 수정되었습니다. 🍊");
-    } catch (e) {
-      alert("수정에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (loading) return <Phone go={go}><div style={{padding:"100px 0", textAlign:"center"}}>정보를 가져오는 중...</div></Phone>;
-
+  ];
   return (
     <Phone navActive="mypage" go={go}>
       <TopBar title="마이페이지" go={go} backTo="customer/home" />
