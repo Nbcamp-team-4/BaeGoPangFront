@@ -7,8 +7,8 @@ import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
 
-const FIXED_LATITUDE = 37.575565;
-const FIXED_LONGITUDE = 126.976785;
+const FIXED_LATITUDE = 37.4979;
+const FIXED_LONGITUDE = 127.0276;
 
 export default function Signup() {
   const navigate = useNavigate();
