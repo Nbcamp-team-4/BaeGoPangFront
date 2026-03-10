@@ -1,56 +1,46 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  screens/customer/MyPage.jsx
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Phone, TopBar, Badge } from '../../shared/components';
 import { FlatIcons, Icon } from '../../shared/icons';
 import { G, PRIMARY } from '../../shared/constants';
+import { getMyPage, updateMyProfile, updateNotification, logout } from '../../shared/api/myPageApi';
 
-import {
-  getMyPage,
-  updateMyProfile,
-  updateNotification,
-  logout,
-} from "../../shared/api/mypage";
+export default function MyPage() {
+  const navigate = useNavigate();
 
-export default function MyPage({ go }) {
+  const go = (target) => {
+    const routeMap = {
+      home: '/customer/home',
+      'order-history': '/customer/order-history'
+    };
+
+    navigate(routeMap[target] || `/customer/${target}`);
+  };
+
   const [noti, setNoti] = useState(true);
   const [editProfile, setEditProfile] = useState(false);
-  
-  const [profile, setProfile] = useState({ name: '홍길동', nick: 'user123', phone: '010-1234-5678' });
-  const [draft, setDraft] = useState({ ...profile });
-  
-  const menuGroups = [
-    {
-      title: '주문 관리',
-      items: [
-        { icon: FlatIcons.orders(G[600]), label: '주문 내역', go: 'order-history' },
-        { icon: FlatIcons.heart(G[600]), label: '찜한 가게', badge: '3' },
-        { icon: FlatIcons.review(G[600]), label: '내 리뷰', badge: '12' }
-      ]
-    },
-    {
-      title: '혜택',
-      items: [
-        { icon: FlatIcons.coupon(G[600]), label: '쿠폰', badge: '1', badgeColor: PRIMARY },
-        { icon: FlatIcons.point(G[600]), label: '포인트', sub: '1,200P' }
-      ]
-    },
-    {
-      title: '설정',
-      items: [
-        { icon: FlatIcons.bell(G[600]), label: '알림 설정', toggle: true, val: noti, set: setNoti },
-        { icon: FlatIcons.lock(G[600]), label: '개인정보 보호' },
-        { icon: FlatIcons.notice(G[600]), label: '공지사항 / 고객센터' }
-      ]
-    }
-  ];
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(false);
 
+  const [profile, setProfile] = useState({
+    name: '홍길동',
+    nick: 'user123',
+    phone: '010-1234-5678',
+    role: 'CUSTOMER',
+    orderCount: 0,
+    reviewCount: 0,
+    favoriteStoreCount: 0,
+    point: 0
+  });
 
   const [draft, setDraft] = useState({
-    name: "",
-    nick: "",
-    phone: "",
+    name: '홍길동',
+    nick: 'user123',
+    phone: '010-1234-5678'
   });
 
   useEffect(() => {
@@ -62,27 +52,27 @@ export default function MyPage({ go }) {
       setLoading(true);
       const data = await getMyPage();
 
-      setProfile({
-        name: data.name ?? "",
-        nick: data.nick ?? "",
-        phone: data.phone ?? "",
-        role: data.role ?? "CUSTOMER",
-        orderCount: data.orderCount ?? 0,
-        reviewCount: data.reviewCount ?? 0,
-        favoriteStoreCount: data.favoriteStoreCount ?? 0,
-        point: data.point ?? 0,
-      });
+      const nextProfile = {
+        name: data?.name ?? '홍길동',
+        nick: data?.nick ?? 'user123',
+        phone: data?.phone ?? '010-1234-5678',
+        role: data?.role ?? 'CUSTOMER',
+        orderCount: data?.orderCount ?? 0,
+        reviewCount: data?.reviewCount ?? 0,
+        favoriteStoreCount: data?.favoriteStoreCount ?? 0,
+        point: data?.point ?? 0
+      };
 
+      setProfile(nextProfile);
       setDraft({
-        name: data.name ?? "",
-        nick: data.nick ?? "",
-        phone: data.phone ?? "",
+        name: nextProfile.name,
+        nick: nextProfile.nick,
+        phone: nextProfile.phone
       });
 
-      setNoti(Boolean(data.notificationEnabled));
+      setNoti(Boolean(data?.notificationEnabled ?? true));
     } catch (e) {
-      console.error("마이페이지 조회 실패", e);
-      alert("마이페이지 정보를 불러오지 못했습니다.");
+      console.error('마이페이지 조회 실패', e);
     } finally {
       setLoading(false);
     }
@@ -95,35 +85,112 @@ export default function MyPage({ go }) {
       const updated = await updateMyProfile({
         name: draft.name,
         nick: draft.nick,
-        phone: draft.phone,
+        phone: draft.phone
       });
 
       setProfile((prev) => ({
         ...prev,
-        name: updated.name ?? draft.name,
-        nick: updated.nick ?? draft.nick,
-        phone: updated.phone ?? draft.phone,
+        name: updated?.name ?? draft.name,
+        nick: updated?.nick ?? draft.nick,
+        phone: updated?.phone ?? draft.phone
       }));
 
       setEditProfile(false);
-      alert("프로필이 수정되었습니다.");
+      alert('프로필이 수정되었습니다.');
     } catch (e) {
-      console.error("프로필 수정 실패", e);
-      alert("프로필 수정에 실패했습니다.");
+      console.error('프로필 수정 실패', e);
+      alert('프로필 수정에 실패했습니다.');
     } finally {
       setSaving(false);
     }
   }
 
+  async function handleToggleNotification() {
+    const nextValue = !noti;
+
+    try {
+      setToggleLoading(true);
+      setNoti(nextValue);
+      await updateNotification(nextValue);
+    } catch (e) {
+      console.error('알림 설정 변경 실패', e);
+      setNoti(!nextValue);
+      alert('알림 설정 변경에 실패했습니다.');
+    } finally {
+      setToggleLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+      alert('로그아웃되었습니다.');
+      navigate('/auth/login');
+    } catch (e) {
+      console.error('로그아웃 실패', e);
+      alert('로그아웃에 실패했습니다.');
+    }
+  }
+
+  const menuGroups = [
+    {
+      title: '주문 관리',
+      items: [
+        { icon: FlatIcons.orders(G[600]), label: '주문 내역', go: 'order-history' },
+        { icon: FlatIcons.heart(G[600]), label: '찜한 가게', badge: String(profile.favoriteStoreCount ?? 0) },
+        { icon: FlatIcons.review(G[600]), label: '내 리뷰', badge: String(profile.reviewCount ?? 0) }
+      ]
+    },
+    {
+      title: '혜택',
+      items: [
+        { icon: FlatIcons.coupon(G[600]), label: '쿠폰', badge: '1', badgeColor: PRIMARY },
+        {
+          icon: FlatIcons.point(G[600]),
+          label: '포인트',
+          sub: `${Number(profile.point ?? 0).toLocaleString()}P`
+        }
+      ]
+    },
+    {
+      title: '설정',
+      items: [
+        { icon: FlatIcons.bell(G[600]), label: '알림 설정', toggle: true, val: noti },
+        { icon: FlatIcons.lock(G[600]), label: '개인정보 보호' },
+        { icon: FlatIcons.notice(G[600]), label: '공지사항 / 고객센터' }
+      ]
+    }
+  ];
+
+  if (loading) {
+    return (
+      <Phone navActive="mypage">
+        <TopBar title="마이페이지" go={go} backTo="home" />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: G[600],
+            fontSize: '14px',
+            fontWeight: 600
+          }}>
+          마이페이지 정보를 불러오는 중입니다...
+        </div>
+      </Phone>
+    );
+  }
+
   return (
     <Phone navActive="mypage">
       <TopBar title="마이페이지" go={go} backTo="home" />
+
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {/* 프로필 */}
         <div
           style={{
             padding: '20px 16px 16px',
-            background: `linear-gradient(160deg,#FFF3F0,#fff)`,
+            background: 'linear-gradient(160deg,#FFF3F0,#fff)',
             borderBottom: `1px solid ${G[100]}`
           }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -145,6 +212,7 @@ export default function MyPage({ go }) {
                 <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" fill={G[400]} opacity=".5" />
               </svg>
             </div>
+
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '17px', fontWeight: 900 }}>{profile.name}</div>
               <div style={{ fontSize: '12px', color: G[500], marginTop: '1px' }}>@{profile.nick}</div>
@@ -154,9 +222,14 @@ export default function MyPage({ go }) {
                 </Badge>
               </div>
             </div>
+
             <button
               onClick={() => {
-                setDraft({ ...profile });
+                setDraft({
+                  name: profile.name,
+                  nick: profile.nick,
+                  phone: profile.phone
+                });
                 setEditProfile(true);
               }}
               style={{
@@ -173,6 +246,7 @@ export default function MyPage({ go }) {
               프로필 수정
             </button>
           </div>
+
           <div
             style={{
               display: 'flex',
@@ -183,10 +257,10 @@ export default function MyPage({ go }) {
               overflow: 'hidden'
             }}>
             {[
-              { l: '주문', v: '28' },
-              { l: '리뷰', v: '12' },
-              { l: '찜한가게', v: '3' },
-              { l: '포인트', v: '1.2K' }
+              { l: '주문', v: String(profile.orderCount ?? 0) },
+              { l: '리뷰', v: String(profile.reviewCount ?? 0) },
+              { l: '찜한가게', v: String(profile.favoriteStoreCount ?? 0) },
+              { l: '포인트', v: `${Number(profile.point ?? 0).toLocaleString()}P` }
             ].map((s, i, arr) => (
               <div
                 key={i}
@@ -202,7 +276,7 @@ export default function MyPage({ go }) {
             ))}
           </div>
         </div>
-        {/* 프로필 수정 모달 */}
+
         {editProfile && (
           <div
             style={{
@@ -236,6 +310,7 @@ export default function MyPage({ go }) {
                   ×
                 </span>
               </div>
+
               {[
                 { label: '이름', key: 'name', ph: '실명 입력' },
                 { label: '닉네임', key: 'nick', ph: '닉네임' },
@@ -245,7 +320,7 @@ export default function MyPage({ go }) {
                   <div style={{ fontSize: '11px', fontWeight: 700, color: G[600], marginBottom: '5px' }}>{label}</div>
                   <input
                     value={draft[key]}
-                    onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
+                    onChange={(e) => setDraft((prev) => ({ ...prev, [key]: e.target.value }))}
                     placeholder={ph}
                     style={{
                       width: '100%',
@@ -261,9 +336,11 @@ export default function MyPage({ go }) {
                   />
                 </div>
               ))}
+
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   onClick={() => setEditProfile(false)}
+                  disabled={saving}
                   style={{
                     flex: 1,
                     padding: '12px',
@@ -272,17 +349,17 @@ export default function MyPage({ go }) {
                     background: '#fff',
                     fontSize: '13px',
                     fontWeight: 700,
-                    cursor: 'pointer',
+                    cursor: saving ? 'not-allowed' : 'pointer',
                     fontFamily: 'inherit',
-                    color: G[700]
+                    color: G[700],
+                    opacity: saving ? 0.6 : 1
                   }}>
                   취소
                 </button>
+
                 <button
-                  onClick={() => {
-                    setProfile({ ...draft });
-                    setEditProfile(false);
-                  }}
+                  onClick={handleSaveProfile}
+                  disabled={saving}
                   style={{
                     flex: 1,
                     padding: '12px',
@@ -292,16 +369,17 @@ export default function MyPage({ go }) {
                     color: '#fff',
                     fontSize: '13px',
                     fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit'
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit',
+                    opacity: saving ? 0.7 : 1
                   }}>
-                  저장
+                  {saving ? '저장 중...' : '저장'}
                 </button>
               </div>
             </div>
           </div>
         )}
-        {/* 메뉴 그룹 */}
+
         <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {menuGroups.map((grp, gi) => (
             <div key={gi}>
@@ -315,6 +393,7 @@ export default function MyPage({ go }) {
                 }}>
                 {grp.title.toUpperCase()}
               </div>
+
               <div
                 style={{
                   background: '#fff',
@@ -325,7 +404,9 @@ export default function MyPage({ go }) {
                 {grp.items.map((item, ii) => (
                   <div
                     key={ii}
-                    onClick={() => item.go && go(item.go)}
+                    onClick={() => {
+                      if (item.go) go(item.go);
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -347,6 +428,7 @@ export default function MyPage({ go }) {
                       }}>
                       {item.icon}
                     </div>
+
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '13px', fontWeight: 600 }}>{item.label}</div>
                       {item.sub && (
@@ -355,16 +437,20 @@ export default function MyPage({ go }) {
                         </div>
                       )}
                     </div>
+
                     {item.badge && (
                       <Badge bg={item.badgeColor || G[200]} color={item.badgeColor ? '#fff' : G[700]}>
                         {item.badge}
                       </Badge>
                     )}
+
                     {item.toggle ? (
                       <div
                         onClick={(e) => {
                           e.stopPropagation();
-                          item.set((v) => !v);
+                          if (!toggleLoading) {
+                            handleToggleNotification();
+                          }
                         }}
                         style={{
                           width: '40px',
@@ -372,8 +458,9 @@ export default function MyPage({ go }) {
                           borderRadius: '11px',
                           background: item.val ? PRIMARY : G[300],
                           position: 'relative',
-                          cursor: 'pointer',
-                          flexShrink: 0
+                          cursor: toggleLoading ? 'not-allowed' : 'pointer',
+                          flexShrink: 0,
+                          opacity: toggleLoading ? 0.7 : 1
                         }}>
                         <div
                           style={{
@@ -397,7 +484,9 @@ export default function MyPage({ go }) {
               </div>
             </div>
           ))}
+
           <button
+            onClick={handleLogout}
             style={{
               width: '100%',
               padding: '13px',
@@ -414,7 +503,8 @@ export default function MyPage({ go }) {
               justifyContent: 'center',
               gap: '7px'
             }}>
-            {FlatIcons.logout()}로그아웃
+            {FlatIcons.logout()}
+            로그아웃
           </button>
         </div>
       </div>
