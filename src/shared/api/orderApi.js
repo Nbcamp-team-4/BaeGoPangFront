@@ -91,3 +91,7 @@ export const createOrderFromCart = async (requestMemo = '') => {
 
   return await postOrder(payload);
 };
+
+export const getOrder = async (orderId) => {
+  return await apiFetch(`/api/orders/${orderId}`);
+};
