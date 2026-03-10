@@ -24,7 +24,14 @@ function formatPrice(value) {
 
 function normalizeOptionItem(item, index = 0) {
   return {
-    id: pickFirst(item?.id, item?.optionItemId, `option-item-${index + 1}`),
+    id: pickFirst(
+      item?.itemId,
+      item?.productOptionItemId,
+      item?.optionItemId,
+      item?.id,
+      `option-item-fallback-${index + 1}`
+    ),
+    productOptionItemId: pickFirst(item?.itemId, item?.productOptionItemId, item?.optionItemId, item?.id, null),
     name: pickFirst(item?.name, item?.optionItemName, `옵션 ${index + 1}`),
     additionalPrice: numberOrDefault(pickFirst(item?.additionalPrice, item?.extraPrice, item?.price), 0)
   };
@@ -34,7 +41,8 @@ function normalizeOption(option, index = 0) {
   const rawItems = pickFirst(option?.items, option?.optionItems, option?.productOptionItems, []);
 
   return {
-    id: pickFirst(option?.id, option?.optionId, `option-${index + 1}`),
+    id: pickFirst(option?.optionId, option?.productOptionId, option?.id, `option-group-fallback-${index + 1}`),
+    productOptionId: pickFirst(option?.optionId, option?.productOptionId, option?.id, null),
     name: pickFirst(option?.name, option?.optionName, `옵션그룹 ${index + 1}`),
     required: Boolean(pickFirst(option?.required, option?.isRequired, false)),
     items: Array.isArray(rawItems) ? rawItems.map((item, itemIndex) => normalizeOptionItem(item, itemIndex)) : []
@@ -46,6 +54,7 @@ function normalizeProductDetail(productData) {
 
   return {
     id: pickFirst(productData?.id, productData?.productId, ''),
+    storeId: pickFirst(productData?.storeId, productData?.shopId, ''),
     name: pickFirst(productData?.name, productData?.productName, '상품명 없음'),
     description: pickFirst(productData?.description, productData?.content, ''),
     imageUrl: pickFirst(productData?.imageUrl, productData?.productImageUrl, ''),
@@ -63,7 +72,7 @@ export default function MenuDetail() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const storeId = searchParams.get('storeId');
+  const queryStoreId = searchParams.get('storeId');
   const menuId = searchParams.get('menuId');
 
   const [qty, setQty] = useState(1);
@@ -74,9 +83,11 @@ export default function MenuDetail() {
   const [error, setError] = useState('');
 
   const go = (target) => {
+    const resolvedStoreId = queryStoreId || product?.storeId;
+
     const routeMap = {
       home: '/customer/home',
-      store: storeId ? `/customer/store?storeId=${storeId}` : '/customer/store',
+      store: resolvedStoreId ? `/customer/store?storeId=${resolvedStoreId}` : '/customer/store',
       cart: '/customer/cart'
     };
 
@@ -114,7 +125,14 @@ export default function MenuDetail() {
         const initialSelectedOptions = {};
         normalized.options.forEach((option) => {
           if (option.items.length > 0) {
-            initialSelectedOptions[option.id] = option.items[0];
+            const firstItem = option.items[0];
+
+            initialSelectedOptions[option.id] = {
+              productOptionId: option.productOptionId,
+              productOptionItemId: firstItem.productOptionItemId,
+              name: firstItem.name,
+              additionalPrice: firstItem.additionalPrice
+            };
           }
         });
 
@@ -149,25 +167,48 @@ export default function MenuDetail() {
   async function handleAddToCart() {
     if (!product) return;
 
-    if (!storeId) {
+    const resolvedStoreId = queryStoreId || product.storeId;
+
+    if (!resolvedStoreId) {
       alert('storeId가 없어 장바구니에 담을 수 없습니다.');
       return;
+    }
+
+    if (!product.id) {
+      alert('productId가 없어 장바구니에 담을 수 없습니다.');
+      return;
+    }
+
+    const requiredOptions = product.options.filter((option) => option.required);
+
+    for (const option of requiredOptions) {
+      const selected = selectedOptions[option.id];
+
+      if (!selected?.productOptionId || !selected?.productOptionItemId) {
+        alert(`${option.name} 옵션을 선택해주세요.`);
+        return;
+      }
     }
 
     try {
       setAdding(true);
 
-      const options = Object.entries(selectedOptions).map(([productOptionId, selectedItem]) => ({
-        productOptionId,
-        productOptionItemId: selectedItem?.id
-      }));
+      const options = Object.values(selectedOptions)
+        .map((selected) => ({
+          productOptionId: selected?.productOptionId,
+          productOptionItemId: selected?.productOptionItemId
+        }))
+        .filter((opt) => opt.productOptionId && opt.productOptionItemId);
 
       const payload = {
-        storeId,
+        storeId: resolvedStoreId,
         productId: product.id,
-        quantity: qty,
+        quantity: Number(qty),
         options
       };
+
+      console.log('장바구니 요청 payload', payload);
+      console.log('선택 옵션 상태', selectedOptions);
 
       const response = await addCartItem(payload);
 
@@ -316,7 +357,8 @@ export default function MenuDetail() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {optionGroup.items.map((opt) => {
-                      const isSelected = selectedOptions?.[optionGroup.id]?.id === opt.id;
+                      const isSelected =
+                        selectedOptions?.[optionGroup.id]?.productOptionItemId === opt.productOptionItemId;
 
                       return (
                         <div
@@ -324,7 +366,12 @@ export default function MenuDetail() {
                           onClick={() =>
                             setSelectedOptions((prev) => ({
                               ...prev,
-                              [optionGroup.id]: opt
+                              [optionGroup.id]: {
+                                productOptionId: optionGroup.productOptionId,
+                                productOptionItemId: opt.productOptionItemId,
+                                name: opt.name,
+                                additionalPrice: opt.additionalPrice
+                              }
                             }))
                           }
                           style={{

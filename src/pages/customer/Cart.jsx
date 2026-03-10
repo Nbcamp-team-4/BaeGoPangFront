@@ -18,48 +18,57 @@ function formatPrice(value) {
   return `${Number(value || 0).toLocaleString()}원`;
 }
 
+function getOptionText(option) {
+  if (!option) return '';
+
+  if (typeof option === 'string') return option;
+
+  const optionName = pickFirst(option?.optionName, option?.productOptionName, option?.name, '');
+
+  const optionItemName = pickFirst(
+    option?.optionItemName,
+    option?.productOptionItemName,
+    option?.itemName,
+    option?.label,
+    option?.name,
+    ''
+  );
+
+  if (optionName && optionItemName && optionName !== optionItemName) {
+    return `${optionName}: ${optionItemName}`;
+  }
+
+  return optionItemName || optionName || '';
+}
+
+function getOptionAdditionalPrice(option) {
+  return numberOrDefault(pickFirst(option?.additionalPrice, option?.extraPrice, option?.optionPrice, option?.price), 0);
+}
+
 function normalizeCartResponse(raw) {
   const cart = raw?.data ?? raw;
 
-  const itemsRaw = pickFirst(cart?.items, cart?.cartItems, []);
-
-  const items = Array.isArray(itemsRaw)
-    ? itemsRaw.map((item, index) => {
-        const optionTextsRaw = pickFirst(
-          item?.optionNames,
-          item?.selectedOptions,
-          item?.options,
-          item?.cartItemOptions,
-          []
-        );
-
-        const optionText = Array.isArray(optionTextsRaw)
-          ? optionTextsRaw
-              .map((opt) => {
-                if (typeof opt === 'string') return opt;
-                return pickFirst(opt?.name, opt?.optionName, opt?.optionItemName, opt?.label, '');
-              })
-              .filter(Boolean)
-              .join(', ')
-          : '';
-
-        return {
-          id: pickFirst(item?.id, item?.itemId, item?.cartItemId, `cart-item-${index + 1}`),
-          productId: pickFirst(item?.productId, item?.product?.id, ''),
-          name: pickFirst(item?.productName, item?.name, item?.product?.name, `상품 ${index + 1}`),
-          opt: optionText,
-          price: numberOrDefault(pickFirst(item?.unitPrice, item?.price, item?.product?.price), 0),
-          qty: numberOrDefault(pickFirst(item?.quantity, item?.qty), 1)
-        };
-      })
-    : [];
-
   return {
-    cartId: pickFirst(cart?.id, cart?.cartId, ''),
-    storeId: pickFirst(cart?.storeId, cart?.store?.id, ''),
-    storeName: pickFirst(cart?.storeName, cart?.store?.name, '장바구니'),
-    deliveryFee: numberOrDefault(pickFirst(cart?.deliveryFee, cart?.store?.deliveryFee), 0),
-    items
+    cartId: cart?.cartId ?? '',
+    storeId: cart?.storeId ?? '',
+    storeName: cart?.storeName ?? '장바구니',
+    deliveryFee: Number(cart?.deliveryFee ?? 0),
+    items: Array.isArray(cart?.items)
+      ? cart.items.map((item) => ({
+          id: item.itemId,
+          productId: item.productId,
+          name: item.productName,
+          opt: Array.isArray(item.options)
+            ? item.options.map((opt) => `${opt.optionName}: ${opt.optionItemName}`).join(', ')
+            : '',
+          unitPrice:
+            Number(item.productPrice ?? 0) +
+            (Array.isArray(item.options)
+              ? item.options.reduce((sum, opt) => sum + Number(opt.additionalPrice ?? 0), 0)
+              : 0),
+          qty: Number(item.quantity ?? 1)
+        }))
+      : []
   };
 }
 
@@ -97,7 +106,10 @@ export default function Cart() {
         }
 
         const data = await response.json();
+        console.log('장바구니 원본 응답', data);
+
         const normalized = normalizeCartResponse(data);
+        console.log('장바구니 정규화 결과', normalized);
 
         if (!mounted) return;
 
@@ -206,7 +218,7 @@ export default function Cart() {
 
     return cart.items.reduce((sum, item, index) => {
       if (!checked || !itemChecked[index]) return sum;
-      return sum + item.price * item.qty;
+      return sum + item.unitPrice * item.qty;
     }, 0);
   }, [cart, checked, itemChecked]);
 
@@ -365,7 +377,7 @@ export default function Cart() {
                   <div style={{ fontSize: '13px', fontWeight: 700 }}>{item.name}</div>
                   <div style={{ fontSize: '11px', color: G[500] }}>{item.opt || '옵션 없음'}</div>
                   <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '2px' }}>
-                    {formatPrice(item.price * item.qty)}
+                    {formatPrice(item.unitPrice * item.qty)}
                   </div>
                 </div>
 
