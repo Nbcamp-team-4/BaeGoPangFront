@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Phone, TopBar, Btn, Badge, Divider, Img } from '../../shared/components';
 import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
 import { getProductDetail } from '../../shared/api/productApi';
+import { addCartItem } from '../../shared/api/cartApi';
 
 function numberOrDefault(value, defaultValue = 0) {
   if (value === null || value === undefined || value === '') return defaultValue;
@@ -66,6 +67,7 @@ export default function MenuDetail() {
   const [product, setProduct] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
 
   const go = (target) => {
@@ -140,6 +142,48 @@ export default function MenuDetail() {
     if (!product) return 0;
     return (product.price + optionExtraPrice) * qty;
   }, [product, optionExtraPrice, qty]);
+
+  async function handleAddToCart() {
+    if (!product) return;
+
+    if (!storeId) {
+      alert('storeId가 없어 장바구니에 담을 수 없습니다.');
+      return;
+    }
+
+    try {
+      setAdding(true);
+
+      const options = Object.entries(selectedOptions).map(([productOptionId, selectedItem]) => ({
+        productOptionId,
+        productOptionItemId: selectedItem?.id
+      }));
+
+      const payload = {
+        storeId,
+        productId: product.id,
+        quantity: qty,
+        options
+      };
+
+      const response = await addCartItem(payload);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('장바구니 담기 실패 응답:', errorText);
+        throw new Error(`장바구니 담기 실패: ${response.status}`);
+      }
+
+      await response.json();
+      alert('장바구니에 담았습니다.');
+      navigate('/customer/cart');
+    } catch (err) {
+      console.error('장바구니 담기 실패', err);
+      alert('장바구니 담기에 실패했습니다.');
+    } finally {
+      setAdding(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -409,8 +453,8 @@ export default function MenuDetail() {
           <div style={{ fontSize: '18px', fontWeight: 900, color: PRIMARY }}>{total.toLocaleString()}원</div>
         </div>
 
-        <Btn variant="primary" full style={{ flex: 1 }} onClick={() => go('cart')} disabled={product.soldOut}>
-          {product.soldOut ? '품절된 상품입니다' : '🛒 장바구니 담기'}
+        <Btn variant="primary" full style={{ flex: 1 }} onClick={handleAddToCart} disabled={product.soldOut || adding}>
+          {product.soldOut ? '품절된 상품입니다' : adding ? '담는 중...' : '🛒 장바구니 담기'}
         </Btn>
       </div>
     </Phone>
