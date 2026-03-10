@@ -6,21 +6,23 @@ import { useState } from "react";
 import { Phone, TopBar, Badge } from "../../shared/components";
 import { FlatIcons, Icon } from "../../shared/icons";
 import { G } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
-export default function OwnerMyPage({ go }) {
+export default function OwnerMyPage() {
+  const navigate = useNavigate();
   const [noti, setNoti] = useState(true);
   const [editProfile, setEditProfile] = useState(false);
   const [profile, setProfile] = useState({ name:"김사장", nick:"owner01", phone:"010-9876-5432", biz:"123-45-67890" });
   const [draft,   setDraft]   = useState({...profile});
   const OWNER_COLOR = "#E65100";
   const menuGroups = [
-    { title:"가게 관리", items:[{icon:FlatIcons.store(),label:"가게 정보",go:"owner-info"},{icon:FlatIcons.orders(G[600]),label:"주문 내역",go:"owner-orders"},{icon:FlatIcons.review(G[600]),label:"리뷰 관리",go:"owner-reviews"}] },
-    { title:"매출",      items:[{icon:FlatIcons.creditcard(),label:"매출 분석",go:"owner-sales"},{icon:FlatIcons.point(G[600]),label:"정산 내역",sub:"이번달 3,420,000원"}] },
+    { title:"가게 관리", items:[{icon:FlatIcons.store(),label:"가게 정보",to:"/owner/info"},{icon:FlatIcons.orders(G[600]),label:"주문 내역",to:"/owner/orders"},{icon:FlatIcons.review(G[600]),label:"리뷰 관리",to:"/owner/reviews"}] },
+    { title:"매출",      items:[{icon:FlatIcons.creditcard(),label:"매출 분석",to:"/owner/sales-detail"},{icon:FlatIcons.point(G[600]),label:"정산 내역",sub:"이번달 3,420,000원"}] },
     { title:"설정",      items:[{icon:FlatIcons.bell(G[600]),label:"알림 설정",toggle:true,val:noti,set:setNoti},{icon:FlatIcons.lock(G[600]),label:"개인정보 보호"},{icon:FlatIcons.notice(G[600]),label:"공지사항 / 고객센터"}] },
   ];
   return (
     <Phone noNav>
-      <TopBar title="마이페이지" go={go} backTo="owner-dash"/>
+      <TopBar title="마이페이지" backTo="/owner/dash"/>
       <div style={{flex:1,overflowY:"auto"}}>
         <div style={{padding:"20px 16px 16px",background:"linear-gradient(160deg,#FFF3E0,#fff)",borderBottom:`1px solid ${G[100]}`}}>
           <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
@@ -56,7 +58,7 @@ export default function OwnerMyPage({ go }) {
               <div style={{fontSize:"11px",fontWeight:700,color:G[400],marginBottom:"6px",letterSpacing:"0.5px"}}>{grp.title.toUpperCase()}</div>
               <div style={{background:"#fff",border:`1.5px solid ${G[200]}`,borderRadius:"12px",overflow:"hidden"}}>
                 {grp.items.map((item,ii) => (
-                  <div key={ii} onClick={()=>item.go&&go(item.go)} style={{display:"flex",alignItems:"center",gap:"12px",padding:"13px 14px",borderBottom:ii<grp.items.length-1?`1px solid ${G[100]}`:"none",cursor:item.go||item.toggle?"pointer":"default"}}>
+                  <div key={ii} onClick={()=>item.to&&navigate(item.to)} style={{display:"flex",alignItems:"center",gap:"12px",padding:"13px 14px",borderBottom:ii<grp.items.length-1?`1px solid ${G[100]}`:"none",cursor:item.to||item.toggle?"pointer":"default"}}>
                     <div style={{width:"32px",height:"32px",borderRadius:"9px",background:G[50],display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{item.icon}</div>
                     <div style={{flex:1}}><div style={{fontSize:"13px",fontWeight:600}}>{item.label}</div>{item.sub&&<div style={{fontSize:"11px",color:OWNER_COLOR,fontWeight:700,marginTop:"1px"}}>{item.sub}</div>}</div>
                     {item.toggle ? <div onClick={e=>{e.stopPropagation();item.set(v=>!v);}} style={{width:"40px",height:"22px",borderRadius:"11px",background:item.val?OWNER_COLOR:G[300],position:"relative",cursor:"pointer",flexShrink:0}}><div style={{width:"18px",height:"18px",borderRadius:"50%",background:"#fff",position:"absolute",top:"2px",left:item.val?"20px":"2px",transition:"left .2s",boxShadow:"0 1px 4px rgba(0,0,0,0.2)"}}/></div> : !item.sub&&Icon.chevron()}

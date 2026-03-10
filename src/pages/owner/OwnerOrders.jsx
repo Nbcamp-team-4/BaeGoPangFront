@@ -6,7 +6,7 @@ import { Phone, TopBar, Btn, Badge } from "../../shared/components";
 import { FlatIcons } from "../../shared/icons";
 import { G, PRIMARY } from "../../shared/constants";
 
-export default function OwnerOrders({ go }) {
+export default function OwnerOrders() {
   const [tab, setTab] = useState("전체");
   const [refundStates, setRefundStates] = useState({});
 
@@ -28,7 +28,7 @@ export default function OwnerOrders({ go }) {
 
   return (
     <Phone noNav>
-      <TopBar title="주문 관리" go={go} backTo="owner-dash"/>
+      <TopBar title="주문 관리" backTo="/owner/dash"/>
       <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column"}}>
         {pendingRefunds.length>0 && (
           <div style={{margin:"12px 14px 0",padding:"10px 13px",background:"#F3E5F5",border:"1.5px solid #CE93D8",borderRadius:"11px",display:"flex",alignItems:"center",gap:"10px",cursor:"pointer"}} onClick={()=>setTab(`환불요청(${pendingRefunds.length})`)}>

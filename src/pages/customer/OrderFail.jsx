@@ -4,8 +4,11 @@
 import { useState } from "react";
 import { Phone, TopBar, Btn, Divider } from "../../shared/components";
 import { G, PRIMARY } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
-export default function OrderFail({ go }) {
+export default function OrderFail() {
+  const navigate = useNavigate();
+  const goTo = (path) => navigate(`/customer/${path}`);
   const [retrying, setRetrying] = useState(false);
   const [retried,  setRetried]  = useState(false);
   const [reasonIdx, setReasonIdx] = useState(0);
@@ -24,13 +27,13 @@ export default function OrderFail({ go }) {
           <svg width="50" height="50" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2E7D32" opacity=".15"/><circle cx="12" cy="12" r="10" stroke="#2E7D32" strokeWidth="1.5"/><polyline points="8 12 11 15 16 9" stroke="#2E7D32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </div>
         <div><div style={{fontSize:"20px",fontWeight:900,color:"#2E7D32"}}>재결제 성공!</div><div style={{fontSize:"13px",color:G[500],marginTop:"5px"}}>주문이 완료되었습니다</div></div>
-        <Btn variant="primary" full onClick={()=>go("order-complete")}>주문 완료 보기</Btn>
+        <Btn variant="primary" full onClick={()=>goTo("order-complete")}>주문 완료 보기</Btn>
       </div>
     </Phone>
   );
   return (
     <Phone noNav>
-      <TopBar title="결제 실패" go={go} backTo="order"/>
+      <TopBar title="결제 실패" backTo="/customer/order"/>
       <div style={{flex:1,overflowY:"auto",padding:"20px 18px",display:"flex",flexDirection:"column",gap:"16px"}}>
         <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:"12px"}}>
           <div style={{width:"88px",height:"88px",borderRadius:"50%",background:"#FFEBEE",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -69,8 +72,8 @@ export default function OrderFail({ go }) {
           {retrying ? "결제 처리 중..." : "40,000원 재결제하기"}
         </button>
         <div style={{display:"flex",gap:"8px"}}>
-          <Btn style={{flex:1}} onClick={()=>go("order")}>← 결제 수단 변경</Btn>
-          <Btn style={{flex:1}} onClick={()=>go("cart")}>장바구니로</Btn>
+          <Btn style={{flex:1}} onClick={()=>goTo("order")}>← 결제 수단 변경</Btn>
+          <Btn style={{flex:1}} onClick={()=>goTo("cart")}>장바구니로</Btn>
         </div>
         <div style={{textAlign:"center",fontSize:"11px",color:G[400],lineHeight:"1.6"}}>
           결제 실패 시 금액이 청구되지 않습니다.<br/>

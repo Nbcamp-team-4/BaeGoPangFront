@@ -6,7 +6,7 @@ import { Icon } from "../../shared/icons";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { G, AI_COLOR, AI_LIGHT } from "../../shared/constants";
 
-export default function AdminAI({ go }) {
+export default function AdminAI() {
   const aiData = [{t:"00시",v:12},{t:"08시",v:45},{t:"12시",v:234},{t:"16시",v:187},{t:"20시",v:312},{t:"24시",v:98}];
   const logs   = [
     { id:"AI-001", type:"메뉴추천", user:"user123", time:"12:34", tokens:842, status:"성공" },
@@ -14,7 +14,7 @@ export default function AdminAI({ go }) {
     { id:"AI-003", type:"메뉴추천", user:"user456", time:"12:28", tokens:0,   status:"실패" },
   ];
   return (
-    <AdminShell title="AI 관리" go={go}>
+    <AdminShell title="AI 관리" back="/admin">
       <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:"10px"}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"7px"}}>
           {[{l:"오늘 요청",v:"1,247",c:AI_COLOR,bg:AI_LIGHT},{l:"성공률",v:"98.2%"},{l:"평균 응답",v:"310ms"}].map((s,i) =>

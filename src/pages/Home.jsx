@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { G, PRIMARY, Icon, Chip, Img, Stars, Badge, Section, Phone, HomeTopBar, TopContent } from "../shared/UI";
 
-function Home({go}){
+function Home(){
   const navigate = useNavigate();
-  const goTo = (path) => navigate(`/${path}`);
+  const goTo = (path) => navigate(`/customer/${path}`);
   const [cat,setCat]=useState("전체");
   const cats=["전체","🍚 한식","🥢 중식","🍗 치킨","🍕 피자","🍣 일식"];
   const stores=[
@@ -12,7 +12,7 @@ function Home({go}){
     {name:"황금 중식당",cat:"중식",rating:4.4,reviews:98,dist:"1.2km",minOrder:"15,000",fee:"3,000",speed:"30~40분"},
     {name:"엄마손 분식",cat:"분식",rating:4.9,reviews:412,dist:"0.4km",minOrder:"8,000",fee:"1,000",speed:"15~25분"},
   ];
-  return <Phone noStatus navActive="home" go={goTo}>
+  return <Phone noStatus navActive="home">
     <TopContent>
       <HomeTopBar address="광화문 1가" onClick={()=>{/* address click */}} />
 

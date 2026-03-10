@@ -6,7 +6,10 @@ import { Phone, TopBar, Btn, Badge } from '../../shared/components';
 import { FlatIcons } from '../../shared/icons';
 import { G, PRIMARY, AI_COLOR, AI_LIGHT } from '../../shared/constants';
 import { generateAiReviewReply } from '../../shared/api/aiApi';
+<<<<<<< HEAD
 // import api from "../../config/api";
+=======
+>>>>>>> main
 
 function Stars({ v }) {
   return (

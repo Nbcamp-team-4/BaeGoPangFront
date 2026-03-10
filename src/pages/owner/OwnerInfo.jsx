@@ -6,14 +6,14 @@ import { Phone, TopBar, Btn, Img } from "../../shared/components";
 import { Icon } from "../../shared/icons";
 import { G, PRIMARY, PRIMARY_LIGHT } from "../../shared/constants";
 
-export default function OwnerInfo({ go }) {
+export default function OwnerInfo() {
   const [open,    setOpen]    = useState(true);
   const [editing, setEditing] = useState(null);
   const days = ["월","화","수","목","금","토","일"];
   const [hours, setHours] = useState({월:"10:00~22:00",화:"10:00~22:00",수:"10:00~22:00",목:"10:00~22:00",금:"10:00~22:00",토:"11:00~23:00",일:"휴무"});
   return (
     <Phone noNav>
-      <TopBar title="가게 정보" go={go} backTo="owner-dash"
+      <TopBar title="가게 정보" backTo="/owner/dash"
         right={
           <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
             <span style={{fontSize:"11px",color:open?"#2E7D32":"#C62828",fontWeight:700}}>{open?"영업중":"영업종료"}</span>

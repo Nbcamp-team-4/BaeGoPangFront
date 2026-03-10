@@ -5,7 +5,7 @@ import { useState } from "react";
 import { AdminShell } from "../../shared/components";
 import { G } from "../../shared/constants";
 
-export default function AdminCategories({ go }) {
+export default function AdminCategories() {
   const [cats, setCats] = useState([
     { name:"한식", icon:"🍚", stores:234, active:true  },
     { name:"중식", icon:"🥢", stores:87,  active:true  },
@@ -16,7 +16,7 @@ export default function AdminCategories({ go }) {
   ]);
   const toggle = i => setCats(c => c.map((x,j) => j===i ? {...x,active:!x.active} : x));
   return (
-    <AdminShell title="카테고리 관리" go={go}>
+    <AdminShell title="카테고리 관리" back="/admin">
       <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:"8px"}}>
         {cats.map((c,i) => (
           <div key={i} style={{display:"flex",alignItems:"center",gap:"12px",padding:"11px 13px",border:`1.5px solid ${G[200]}`,borderRadius:"10px",background:"#fff"}}>

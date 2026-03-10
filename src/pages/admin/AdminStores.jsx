@@ -5,7 +5,7 @@ import { AdminShell, SearchBar, StatCard, THead, TRow, Badge } from "../../share
 import { Icon } from "../../shared/icons";
 import { G } from "../../shared/constants";
 
-export default function AdminStores({ go }) {
+export default function AdminStores() {
   const stores = [
     { name:"맛있는 한식당", owner:"owner01", cat:"한식", status:"승인"  },
     { name:"신규 피자집",   owner:"owner05", cat:"피자", status:"심사중" },
@@ -13,7 +13,7 @@ export default function AdminStores({ go }) {
     { name:"이상한 분식",   owner:"owner09", cat:"분식", status:"정지"  },
   ];
   return (
-    <AdminShell title="가게 관리" go={go}>
+    <AdminShell title="가게 관리" back="/admin">
       <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:"10px"}}>
         <SearchBar placeholder="가게명 검색"/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"7px"}}>

@@ -4,8 +4,10 @@
 import { useState } from "react";
 import { Phone } from "../../shared/components";
 import { G, PRIMARY, AI_COLOR } from "../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
-export default function Onboarding({ go }) {
+export default function Onboarding() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const slides = [
     { icon:"🍽️", color:PRIMARY,   bg:"#FFF3F0", title:"배고팡에 오신걸\n환영해요!",        sub:"배고프면 팡! 원하는 음식을\n빠르게 주문해보세요" },
@@ -18,7 +20,7 @@ export default function Onboarding({ go }) {
     <Phone noNav noStatus>
       <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",background:s.bg,transition:"background .4s"}}>
         <div style={{padding:"16px 20px 0",display:"flex",justifyContent:"flex-end"}}>
-          {page < 3 && <span onClick={()=>go("login")} style={{fontSize:"13px",color:G[500],fontWeight:600,cursor:"pointer"}}>건너뛰기</span>}
+          {page < 3 && <span onClick={()=>navigate("/auth/login")} style={{fontSize:"13px",color:G[500],fontWeight:600,cursor:"pointer"}}>건너뛰기</span>}
         </div>
         <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 32px",gap:"24px",textAlign:"center"}}>
           <div style={{width:"130px",height:"130px",borderRadius:"36px",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"64px",boxShadow:`0 12px 40px ${s.color}33`}}>{s.icon}</div>
@@ -36,8 +38,8 @@ export default function Onboarding({ go }) {
           {page < 3
             ? <button onClick={()=>setPage(p=>p+1)} style={{padding:"15px",borderRadius:"14px",border:"none",background:s.color,color:"#fff",fontSize:"15px",fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>다음 →</button>
             : <>
-                <button onClick={()=>go("login")}  style={{padding:"15px",borderRadius:"14px",border:"none",background:PRIMARY,color:"#fff",fontSize:"15px",fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>로그인하기</button>
-                <button onClick={()=>go("signup")} style={{padding:"13px",borderRadius:"14px",border:`2px solid ${G[300]}`,background:"#fff",color:G[700],fontSize:"13px",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>회원가입</button>
+                <button onClick={()=>navigate("/auth/login")}  style={{padding:"15px",borderRadius:"14px",border:"none",background:PRIMARY,color:"#fff",fontSize:"15px",fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>로그인하기</button>
+                <button onClick={()=>navigate("/auth/signup")} style={{padding:"13px",borderRadius:"14px",border:`2px solid ${G[300]}`,background:"#fff",color:G[700],fontSize:"13px",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>회원가입</button>
               </>
           }
         </div>

@@ -36,14 +36,14 @@ function MiniBar({ pct, color }) {
   );
 }
 
-export default function AdminPayments({ go }) {
+export default function AdminPayments() {
   const [tab,       setTab]       = useState("개요");
   const [logFilter, setLogFilter] = useState("전체");
   const tabs         = ["개요","결제 로그","수단별 분석"];
   const filteredLogs = logFilter==="전체" ? LOGS : LOGS.filter(l=>l.status===logFilter);
 
   return (
-    <AdminShell title="결제 관리" go={go}>
+    <AdminShell title="결제 관리" back="/admin">
       <div style={{display:"flex",borderBottom:`1px solid ${G[200]}`,background:"#fff",flexShrink:0}}>
         {tabs.map(t => (
           <div key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"11px 0",textAlign:"center",fontSize:"11px",fontWeight:700,cursor:"pointer",color:tab===t?"#1A237E":G[500],borderBottom:`2px solid ${tab===t?"#1A237E":"transparent"}`}}>{t}</div>
