@@ -1,29 +1,89 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  screens/owner/OwnerReviews.jsx
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import { Phone, TopBar, Btn, Badge } from "../../shared/components";
 import { FlatIcons } from "../../shared/icons";
 import { G, PRIMARY, AI_COLOR, AI_LIGHT } from "../../shared/constants";
+import { generateAiReviewReply } from "../../shared/api/aiApi";
+import api from "../../config/api";
+
+function Stars({ v }) {
+  return (
+    <span style={{ color: "#FFC107", fontSize: "11px" }}>
+      {"★".repeat(v)}{"☆".repeat(5 - v)}
+    </span>
+  );
+}
 
 export default function OwnerReviews({ go }) {
-  const [replyTarget, setReplyTarget] = useState(null);
-  const [aiLoading,   setAiLoading]   = useState(false);
-  const [replyText,   setReplyText]   = useState("");
-  const [aiGenerated, setAiGenerated] = useState(false);
-  const reviews = [
-    { user:"user123", rating:5, date:"2025-03-01", menu:"김치찌개",   content:"국물이 진짜 얼큰하고 맛있어요!",       replied:true,  reply:"소중한 리뷰 감사합니다 😊" },
-    { user:"user456", rating:4, date:"2025-02-28", menu:"불고기 정식", content:"양념이 잘 배어있고 반찬도 신선했어요.", replied:false, reply:"" },
-    { user:"user999", rating:2, date:"2025-02-27", menu:"된장찌개",   content:"국물이 좀 짜서 아쉬웠어요.",            replied:false, reply:"" },
-  ];
-  const handleAiGenerate = r => {
-    setAiLoading(true); setAiGenerated(false);
-    setTimeout(()=>{ setReplyText(`안녕하세요, ${r.user}님! ${r.menu} 주문 감사합니다 😊`); setAiLoading(false); setAiGenerated(true); }, 1500);
+const [reviews, setReviews] = useState([]); // 상태로 관리
+const [storeInfo, setStoreInfo] = useState(null); // 실제 DB의 가게 정보 저장
+const [loading, setLoading] = useState(true);
+
+
+const currentUserId = "11111111-1111-1111-1111-111111111111";
+
+useEffect(() => {
+    const initData = async () => {
+      try {
+        setLoading(true);
+
+        // 1. [실제 연동] 내 가게 목록 조회 (백엔드: GET /api/stores/my)
+        const storeRes = await api.get(`stores/my`, {
+          params: { userId: currentUserId } // 백엔드 @RequestParam UUID userId 대응
+        });
+
+        // 결과 목록 중 첫 번째 가게를 사용 (사장님은 보통 가게가 하나이므로)
+        const myStore = storeRes.data.content[0]; 
+        
+        if (myStore) {
+          setStoreName(myStore.name);
+
+          // 2. [실제 연동] 가져온 실제 storeId로 리뷰 조회 (백엔드: GET /api/reviews/stores/{storeId})
+          const reviewRes = await api.get(`/api/reviews/stores/${myStore.id}`);
+          setReviews(reviewRes.data);
+        }
+      } catch (error) {
+        console.error("데이터 연동 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initData();
+  }, [currentUserId]);
+
+
+// 🟢 2. AI 생성 핸들러 (백엔드 연동)
+  const handleAiGenerate = async (r) => {
+    if (!r.id) return alert("리뷰 ID가 없습니다.");
+    
+    setAiLoading(true);
+    setAiGenerated(false);
+
+    try {
+      // 백엔드의 generateReviewReply 호출
+      const data = await generateAiReviewReply(r.id, "친절하고 정중하게");
+      
+      // 백엔드 필드명 aiGeneratedReply를 프론트 상태에 저장
+      setReplyText(data.aiGeneratedReply); 
+      setAiGenerated(true);
+    } catch (error) {
+      console.error("AI 생성 에러:", error);
+      alert("AI 서버와 통신 중 오류가 발생했습니다.");
+    } finally {
+      setAiLoading(false);
+    }
   };
-  function Stars({ v }) { return <span style={{color:"#FFC107",fontSize:"11px"}}>{"★".repeat(v)}{"☆".repeat(5-v)}</span>; }
+ 
+ 
+ 
   return (
     <Phone noNav>
+
       <TopBar title="⭐ 리뷰 관리" go={go} backTo="owner-dash"/>
+
       <div style={{flex:1,overflowY:"auto",padding:"12px 14px",display:"flex",flexDirection:"column",gap:"10px"}}>
         {reviews.map((r,i) => (
           <div key={i} style={{border:`1.5px solid ${G[200]}`,borderRadius:"13px",overflow:"hidden",background:"#fff"}}>
