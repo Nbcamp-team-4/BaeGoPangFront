@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Phone, TopBar, Img, Badge } from '../../shared/components';
 import { G, PRIMARY } from '../../shared/constants';
 import { getStoreDetail } from '../../shared/api/storeApi';
+import { getProductsByStore } from '../../shared/api/productApi';
 
 function Stars({ v = 4.5, size = 12 }) {
   return (
@@ -17,6 +18,69 @@ function formatPrice(value) {
   return `${Number(value || 0).toLocaleString()}원`;
 }
 
+function numberOrDefault(value, defaultValue = 0) {
+  if (value === null || value === undefined || value === '') return defaultValue;
+  const num = Number(value);
+  return Number.isNaN(num) ? defaultValue : num;
+}
+
+function pickFirst(...values) {
+  return values.find((value) => value !== undefined && value !== null);
+}
+
+function normalizeStore(storeData) {
+  return {
+    id: storeData?.id ?? '',
+    name: pickFirst(storeData?.name, storeData?.storeName, '가게명 없음'),
+    imageUrl: pickFirst(storeData?.imageUrl, storeData?.storeImageUrl, ''),
+    rating: numberOrDefault(pickFirst(storeData?.rating, storeData?.avgRating, storeData?.averageRating), 0),
+    reviewCount: numberOrDefault(
+      pickFirst(storeData?.reviewCount, storeData?.totalReviewCount, storeData?.reviewsCount),
+      0
+    ),
+    distanceKm: numberOrDefault(pickFirst(storeData?.distanceKm, storeData?.distance, storeData?.distanceInKm), 0),
+    minOrderAmount: numberOrDefault(
+      pickFirst(storeData?.minOrderAmount, storeData?.minimumOrderAmount, storeData?.minimumPrice),
+      0
+    ),
+    deliveryFee: numberOrDefault(
+      pickFirst(storeData?.deliveryFee, storeData?.deliveryTip, storeData?.deliveryPrice),
+      0
+    ),
+    deliveryTime:
+      pickFirst(storeData?.deliveryTime, storeData?.estimatedDeliveryTime, storeData?.deliveryEta) ||
+      (storeData?.deliveryMinMinutes !== undefined && storeData?.deliveryMaxMinutes !== undefined
+        ? `${storeData.deliveryMinMinutes}~${storeData.deliveryMaxMinutes}분`
+        : '배달 시간 정보 없음'),
+    phone: pickFirst(storeData?.phone, storeData?.storePhone, ''),
+    address: pickFirst(storeData?.address, storeData?.roadAddress, ''),
+    liked: Boolean(pickFirst(storeData?.liked, storeData?.isLiked, false)),
+    reviewPhotos: Array.isArray(storeData?.reviewPhotos) ? storeData.reviewPhotos : ['', '', '', '', ''],
+    menuCategories: ['전체']
+  };
+}
+
+function normalizeProducts(productData) {
+  if (!Array.isArray(productData)) return [];
+
+  return productData
+    .map((product, index) => ({
+      id: product?.id ?? `product-${index + 1}`,
+      rank: index + 1,
+      category: '전체',
+      name: pickFirst(product?.name, product?.productName, `상품 ${index + 1}`),
+      option: pickFirst(product?.description, ''),
+      description: pickFirst(product?.description, ''),
+      price: numberOrDefault(product?.price, 0),
+      reviewCount: numberOrDefault(product?.reviewCount, 0),
+      aiRecommended: Boolean(product?.useAiDescription ?? false),
+      imageUrl: pickFirst(product?.imageUrl, product?.productImageUrl, ''),
+      soldOut: Boolean(product?.soldOut ?? product?.isSoldOut ?? false),
+      hidden: Boolean(product?.hidden ?? product?.isHidden ?? false)
+    }))
+    .filter((product) => !product.hidden);
+}
+
 export default function Store() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -24,6 +88,7 @@ export default function Store() {
   const storeId = searchParams.get('storeId');
 
   const [store, setStore] = useState(null);
+  const [products, setProducts] = useState([]);
   const [activeMenu, setActiveMenu] = useState('전체');
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -45,32 +110,61 @@ export default function Store() {
   useEffect(() => {
     let mounted = true;
 
-    async function fetchStoreDetail() {
+    async function fetchStorePageData() {
+      if (!storeId) {
+        setError('storeId가 없습니다.');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError('');
 
-        const data = await getStoreDetail(storeId);
+        const [storeResponse, productResponse] = await Promise.all([
+          getStoreDetail(storeId),
+          getProductsByStore(storeId)
+        ]);
+
+        console.log('storeResponse.status', storeResponse.status);
+        console.log('productResponse.status', productResponse.status);
+
+        if (!storeResponse.ok) {
+          throw new Error(`가게 상세 조회 실패: ${storeResponse.status}`);
+        }
+
+        if (!productResponse.ok) {
+          throw new Error(`상품 목록 조회 실패: ${productResponse.status}`);
+        }
+
+        const storeData = await storeResponse.json();
+        const productData = await productResponse.json();
+
+        console.log('storeData', storeData);
+        console.log('productData', productData);
 
         if (!mounted) return;
 
-        setStore(data);
-        setLiked(Boolean(data?.liked));
+        const normalizedStore = normalizeStore(storeData);
+        const normalizedProducts = normalizeProducts(productData);
 
-        const firstCategory =
-          Array.isArray(data?.menuCategories) && data.menuCategories.length > 0 ? data.menuCategories[0] : '전체';
+        console.log('normalizedStore', normalizedStore);
+        console.log('normalizedProducts', normalizedProducts);
 
-        setActiveMenu(firstCategory);
+        setStore(normalizedStore);
+        setProducts(normalizedProducts);
+        setLiked(Boolean(normalizedStore?.liked));
+        setActiveMenu('전체');
       } catch (err) {
         if (!mounted) return;
-        console.error(err);
+        console.error('가게 상세 페이지 조회 실패', err);
         setError('가게 정보를 불러오지 못했습니다.');
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    fetchStoreDetail();
+    fetchStorePageData();
 
     return () => {
       mounted = false;
@@ -78,10 +172,10 @@ export default function Store() {
   }, [storeId]);
 
   const filteredMenus = useMemo(() => {
-    if (!store?.menus) return [];
-    if (activeMenu === '전체') return store.menus;
-    return store.menus.filter((menu) => menu.category === activeMenu);
-  }, [store, activeMenu]);
+    if (!products) return [];
+    if (activeMenu === '전체') return products;
+    return products.filter((menu) => menu.category === activeMenu);
+  }, [products, activeMenu]);
 
   const reviewPhotos = useMemo(() => {
     if (!store?.reviewPhotos || store.reviewPhotos.length === 0) {
@@ -301,7 +395,7 @@ export default function Store() {
                   fontSize: '13px',
                   background: '#fff'
                 }}>
-                등록된 메뉴가 없습니다.
+                등록된 상품이 없습니다.
               </div>
             ) : (
               filteredMenus.map((menu) => (
@@ -321,7 +415,8 @@ export default function Store() {
                     display: 'flex',
                     gap: '10px',
                     background: '#fff',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    opacity: menu.soldOut ? 0.6 : 1
                   }}>
                   <div style={{ flex: 1 }}>
                     <div
@@ -339,6 +434,12 @@ export default function Store() {
                       {menu.aiRecommended && (
                         <Badge color="#7B1FA2" bg="#F3E5F5">
                           ✨AI
+                        </Badge>
+                      )}
+
+                      {menu.soldOut && (
+                        <Badge color="#fff" bg="#E53935">
+                          품절
                         </Badge>
                       )}
                     </div>
