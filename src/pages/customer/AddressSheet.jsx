@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Phone, TopBar, Btn, Badge } from '../../shared/components';
 import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
 import { Icon } from '../../shared/icons';
 
 import { apiFetch } from '../../shared/api/apiClient';
-import { login } from '../../shared/api/authApi';
 
 // ── 주소 목록 페이지 ──────────────────────────────────────
 function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack }) {
@@ -24,12 +23,6 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack
           flexDirection: 'column',
           gap: '10px'
         }}>
-        {addrs.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: G[400], fontSize: '13px' }}>
-            저장된 주소가 없습니다
-          </div>
-        )}
-
         {addrs.map((a) => (
           <div
             key={a.id}
@@ -125,7 +118,6 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack
       </div>
 
       <div style={{ padding: '12px 16px 32px', flexShrink: 0, borderTop: `1px solid ${G[100]}` }}>
-        {/* selected가 없으면 비활성화 */}
         <Btn variant="primary" full size="lg" disabled={!selected} onClick={() => onConfirm(selected)}>
           이 주소로 배달받기
         </Btn>
@@ -137,10 +129,24 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack
 // ── 주소 추가 페이지 ──────────────────────────────────────
 function AddAddressFormPage({ onBack, onAdd }) {
   const [form, setForm] = useState({ label: '', road: '', detail: '' });
+  const [loading, setLoading] = useState(false);
 
-  const handleAdd = () => {
-    if (!form.road.trim()) return;
-    onAdd({ ...form, label: form.label.trim() || '기타' });
+  const handleAdd = async () => {
+    if (!form.road.trim() || loading) return;
+
+    setLoading(true);
+    try {
+      await onAdd({
+        label: form.label.trim() || '기타',
+        road: form.road.trim(),
+        detail: form.detail.trim()
+      });
+    } catch (e) {
+      console.error('배송지 추가 실패', e);
+      alert(e.message || '주소 추가에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -168,7 +174,7 @@ function AddAddressFormPage({ onBack, onAdd }) {
             </div>
             <input
               value={form[key]}
-              onChange={(e) => setForm((d) => ({ ...d, [key]: e.target.value }))}
+              onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
               placeholder={ph}
               style={{
                 width: '100%',
@@ -188,8 +194,8 @@ function AddAddressFormPage({ onBack, onAdd }) {
       </div>
 
       <div style={{ padding: '12px 18px 32px', flexShrink: 0 }}>
-        <Btn variant="primary" full size="lg" disabled={!form.road.trim()} onClick={handleAdd}>
-          주소 추가하기
+        <Btn variant="primary" full size="lg" disabled={!form.road.trim() || loading} onClick={handleAdd}>
+          {loading ? '추가 중...' : '주소 추가하기'}
         </Btn>
       </div>
     </Phone>
@@ -199,22 +205,114 @@ function AddAddressFormPage({ onBack, onAdd }) {
 // ── 진입점 ────────────────────────────────────────────────
 export default function AddressPage({ onBack, onConfirm }) {
   const [page, setPage] = useState('list');
-  const [addrs, setAddrs] = useState([
-    { id: 1, label: '집', road: '서울 종로구 세종대로 172', detail: '101호', selected: true },
-    { id: 2, label: '회사', road: '서울 중구 을지로 30', detail: '5층', selected: false }
-  ]);
+  const [addrs, setAddrs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const select = (id) => setAddrs((a) => a.map((x) => ({ ...x, selected: x.id === id })));
-  const remove = (id) => setAddrs((a) => a.filter((x) => x.id !== id));
+  const normalizeAddress = (item, index = 0) => ({
+    id: item.id,
+    label: item.name ?? item.label ?? `주소 ${index + 1}`,
+    road: item.address ?? item.road ?? '',
+    detail: item.detailAddress ?? item.detail ?? '',
+    selected: index === 0
+  });
 
-  const handleAdd = (newAddr) => {
-    const id = Date.now();
-    setAddrs((a) => [...a.map((x) => ({ ...x, selected: false })), { id, ...newAddr, selected: true }]);
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      setLoading(true);
+      try {
+        const res = await apiFetch('/api/address');
+
+        if (!res.ok) {
+          throw new Error('배송지 목록 조회 실패');
+        }
+
+        const json = await res.json();
+        const payload = json?.data ?? json ?? {};
+        const content = Array.isArray(payload?.content) ? payload.content : [];
+
+        const normalized = content.map((item, index) => normalizeAddress(item, index));
+        setAddrs(normalized);
+      } catch (e) {
+        console.error('배송지 목록 조회 실패', e);
+        setAddrs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAddresses();
+  }, []);
+
+  const select = (id) => {
+    setAddrs((prev) => prev.map((x) => ({ ...x, selected: x.id === id })));
+  };
+
+  const remove = (id) => {
+    setAddrs((prev) => prev.filter((x) => x.id !== id));
+  };
+
+  const handleAdd = async (newAddr) => {
+    const payload = {
+      name: newAddr.label,
+      phone: '010-1234-1234',
+      address: newAddr.road,
+      detailAddress: newAddr.detail,
+      latitude: 37.5759,
+      longitude: 126.9768,
+      isDefault: addrs.length === 0
+    };
+
+    console.log('배송지 추가 요청:', payload);
+
+    const res = await apiFetch('/api/address', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.error('배송지 추가 실패 응답:', errorData);
+      throw new Error(errorData?.message || '주소 추가에 실패했습니다.');
+    }
+
+    const json = await res.json();
+    console.log('배송지 추가 응답:', json);
+
+    const saved = json?.data ?? json;
+
+    const nextAddr = {
+      id: saved?.id ?? Date.now(),
+      label: saved?.name ?? newAddr.label,
+      road: saved?.address ?? newAddr.road,
+      detail: saved?.detailAddress ?? newAddr.detail,
+      selected: true
+    };
+
+    setAddrs((prev) => [...prev.map((x) => ({ ...x, selected: false })), nextAddr]);
     setPage('list');
   };
 
   if (page === 'add') {
     return <AddAddressFormPage onBack={() => setPage('list')} onAdd={handleAdd} />;
+  }
+
+  if (loading) {
+    return (
+      <Phone noNav>
+        <TopBar title="배달 주소" backTo={onBack} />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: G[500],
+            fontSize: '13px'
+          }}>
+          배송지 목록을 불러오는 중입니다.
+        </div>
+      </Phone>
+    );
   }
 
   return (
@@ -223,7 +321,7 @@ export default function AddressPage({ onBack, onConfirm }) {
       onSelect={select}
       onDelete={remove}
       onGoAdd={() => setPage('add')}
-      onConfirm={onConfirm} // (selectedAddr) => void — 주소 객체 전달
+      onConfirm={onConfirm}
       onBack={onBack}
     />
   );

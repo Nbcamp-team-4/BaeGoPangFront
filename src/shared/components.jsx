@@ -556,6 +556,21 @@ export function Phone({ children, navActive, noNav, noStatus }) {
       {!noNav && <BottomNav active={navActive} />}
     </div>
   );
+}export function TopContent({ children, style }) {
+  return (
+    <div 
+      style={{ 
+        position: 'sticky', 
+        top: 0, 
+        zIndex: 100, 
+        background: '#fff', 
+        width: '100%', 
+        ...style 
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 /** 관리자 전용 셸 (파란 상태바 + 뒤로가기 TopBar) */
