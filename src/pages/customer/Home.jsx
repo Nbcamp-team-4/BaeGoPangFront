@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Phone, Chip, Img, Badge, Section } from '../../shared/components';
 import { Icon } from '../../shared/icons';
 import { G, PRIMARY, AI_COLOR } from '../../shared/constants';
+
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
 
@@ -20,9 +21,37 @@ function Stars({ v = 4.5, size = 12 }) {
 export default function Home({ go }) {
   // 라우터
   const navigate = useNavigate();
-  // 태그
-  const [cat, setCat] = useState('전체');
-  const cats = ['전체', '🍚 한식', '🥢 중식', '🌮 분식', '🍗 치킨', '🍕 피자', '🍣 일식'];
+  // 카테고리
+  const mockCats = [
+    { id: null, name: '전체', icon: '' },
+    { id: 'korean', name: '한식', icon: '🍚' },
+    { id: 'chinese', name: '중식', icon: '🥢' },
+    { id: 'snack', name: '분식', icon: '🌮' },
+    { id: 'chicken', name: '치킨', icon: '🍗' },
+    { id: 'pizza', name: '피자', icon: '🍕' },
+    { id: 'japanese', name: '일식', icon: '🍣' }
+  ];
+
+  const [categories, setCategories] = useState(mockCats);
+  const [cat, setCat] = useState(null); // null = 전체
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await apiFetch('/api/categories', {
+          method: 'GET'
+        });
+
+        const data = res.data?.content ?? res.data ?? [];
+        alert(JSON.stringify(data));
+        console.log('성공적으로 카테고리를 불러왔습니다.');
+        setCategories([{ id: null, name: '전체', icon: '' }, ...data]);
+      } catch (e) {
+        console.error('카테고리 조회 실패', e);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // 가게 데이터
   const mockStores = [
@@ -65,18 +94,11 @@ export default function Home({ go }) {
     const fetchStores = async () => {
       try {
         // const data = await apiFetch('/api/stores/nearby', {
-        //   method: 'POST',
-        //   body: JSON.stringify({
-        //     loginId: form.loginId,
-        //     password: form.password,
-        //     name: form.name,
-        //     email: form.email,
-        //     phone: form.phone,
-        //     type: role
-        //   })
+        //   method: 'GET',
+        //
         // });
 
-        setStores(data.data); // 실제 데이터로 교체
+        setStores(data.data ?? mockStores);
       } catch (e) {
         console.error(e);
       } finally {
@@ -160,8 +182,13 @@ export default function Home({ go }) {
             marginLeft: '-14px',
             paddingLeft: '14px'
           }}>
-          {cats.map((c) => (
-            <Chip key={c} label={c} active={cat === c} onClick={() => setCat(c)} />
+          {categories.map((c) => (
+            <Chip
+              key={c.id ?? 'all'}
+              label={c.icon ? `${c.icon} ${c.name}` : c.name}
+              active={cat === c.id}
+              onClick={() => setCat(c.id)}
+            />
           ))}
         </div>
         <Section title="🔥 인기 가게">

@@ -6,6 +6,9 @@ import { Phone, TopBar, Badge } from '../../shared/components';
 import { FlatIcons, Icon } from '../../shared/icons';
 import { G, PRIMARY } from '../../shared/constants';
 
+import { apiFetch } from '../../shared/api/apiClient';
+import { login } from '../../shared/api/authApi';
+
 export default function MyPage({ go }) {
   const [noti, setNoti] = useState(true);
   const [editProfile, setEditProfile] = useState(false);
