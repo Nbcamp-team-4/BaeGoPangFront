@@ -7,6 +7,87 @@ import { Phone, TopBar, Btn } from '../../shared/components';
 import { FlatIcons } from '../../shared/icons';
 import { G, PRIMARY } from '../../shared/constants';
 
+import { getMyOrders, cancelOrder } from '../../shared/api/orderApi';
+import { getUserId } from '../../shared/utils/user';
+function getStatusLabel(status) {
+  switch (status) {
+    case 'PENDING_PAYMENT':
+      return '처리중';
+    case 'PAID':
+      return '결제완료';
+    case 'ACCEPTED':
+      return '수락됨';
+    case 'REJECTED':
+      return '거절됨';
+    case 'COOKING':
+      return '조리중';
+    case 'DELIVERING':
+      return '배달중';
+    case 'COMPLETED':
+      return '배달완료';
+    case 'CANCELED':
+      return '취소됨';
+    default:
+      return status;
+  }
+}
+
+function getStatusMessage(status) {
+  switch (status) {
+    case 'PENDING_PAYMENT':
+      return '결제 처리 중입니다.';
+    case 'PAID':
+      return '주문 확인 전입니다.';
+    case 'ACCEPTED':
+      return '주문이 수락되었어요, 약 15~20분 걸려요.';
+    case 'REJECTED':
+      return '주문이 거절되었어요, 곧 환불됩니다.';
+    case 'COOKING':
+      return '음식을 조리 중이에요, 약 15~20분 걸려요.';
+    case 'DELIVERING':
+      return '배달 중입니다, 약 10~15분 걸려요.';
+    case 'COMPLETED':
+      return '배달이 완료되었어요.';
+    case 'CANCELED':
+      return '주문이 취소되었어요, 곧 환불됩니다.';
+    default:
+      return '';
+  }
+}
+function renderOrderActions(o, goToReview, setRefundModal) {
+  switch (o.status) {
+    case 'PAID':
+      return (
+        <button onClick={() => setRefundModal(o)} style={secondaryButtonStyle}>
+          주문 취소
+        </button>
+      );
+
+    case 'COMPLETED':
+      return (
+        <>
+          <Btn size="sm" variant="primary" onClick={() => goToReview(o.id)}>
+            리뷰 작성
+          </Btn>
+
+          <button onClick={() => setRefundModal(o)} style={secondaryButtonStyle}>
+            환불 문의
+          </button>
+        </>
+      );
+
+    default:
+      return null;
+  }
+}
+const secondaryButtonStyle = {
+  padding: '6px 12px',
+  borderRadius: '8px',
+  border: `1px solid ${G[200]}`,
+  background: '#fff',
+  fontSize: '12px',
+  cursor: 'pointer'
+};
 /** * 1. 환불 모달 (같은 파일에 선언)
  * export를 붙여두면 다른 파일(OrderDetail 등)에서도 쓸 수 있습니다.
  */
@@ -118,36 +199,54 @@ export default function OrderHistory() {
   const navigate = useNavigate();
   const go = (path) => navigate(`/${path}`);
 
+  const goToReview = (orderId) => navigate(`/customer/review?orderId=${orderId}`);
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refundModal, setRefundModal] = useState(null);
 
   // 테스트용 유저 ID (실제 운영 시 세션에서 가져옴)
-  const USER_ID = '89736f33-6593-4a12-8877-333333333333';
+  const USER_ID = getUserId();
 
   // API 호출
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        // 백엔드 주소 확인 필수! (예: /api/orders/customer)
-        const res = await fetch('/api/orders/customer', {
-          headers: { 'X-User-Id': USER_ID }
-        });
-        const result = await res.json();
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
 
-        if (res.ok && result.success) {
-          setOrders(result.data); // BaseResponse 구조에 맞춤
-        }
-      } catch (err) {
-        console.error('데이터 로드 에러:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const res = await getMyOrders();
+      const result = await res.json();
+      const ordersData = result;
+      console.log(ordersData.data.content);
+      setOrders(ordersData.data.content);
+    } catch (err) {
+      console.error('데이터 로드 에러:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchOrders();
   }, []);
+  const handleRefundRequest = async (reason) => {
+    if (!refundModal?.id) return;
 
+    try {
+      const res = await cancelOrder(refundModal.id, { reason });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || '환불 요청에 실패했습니다.');
+      }
+
+      alert('주문이 취소되었습니다.');
+      setRefundModal(null);
+      fetchOrders();
+    } catch (err) {
+      console.error('환불 요청 실패:', err);
+      alert('환불 요청에 실패했습니다.');
+    }
+  };
   if (loading)
     return (
       <Phone go={go}>
@@ -163,7 +262,7 @@ export default function OrderHistory() {
           orderStore={refundModal.storeName}
           orderAmount={refundModal.totalPrice}
           onClose={() => setRefundModal(null)}
-          onDone={() => setRefundModal(null)}
+          onDone={handleRefundRequest}
         />
       )}
 
@@ -195,7 +294,7 @@ export default function OrderHistory() {
                     borderRadius: '6px',
                     background: '#FFF3F0'
                   }}>
-                  {o.status}
+                  {getStatusLabel(o.status)}
                 </span>
               </div>
 
@@ -203,33 +302,12 @@ export default function OrderHistory() {
                 주문일: {o.createdAt?.split('T')[0]} · {o.totalPrice?.toLocaleString()}원
               </div>
 
-              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                {/* ✅ 배달 완료 상태일 때만 리뷰 작성 버튼 노출 */}
-                {(o.status === 'DELIVERED' || o.status === '배달완료') && (
-                  <Btn
-                    size="sm"
-                    variant="primary"
-                    onClick={() =>
-                      navigate('/customer/review', {
-                        state: { orderId: o.id, storeName: o.storeName }
-                      })
-                    }>
-                    리뷰 작성
-                  </Btn>
-                )}
+              <div style={{ fontSize: '12px', color: G[700], marginTop: '8px', fontWeight: 600 }}>
+                {getStatusMessage(o.status)}
+              </div>
 
-                <button
-                  onClick={() => setRefundModal(o)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${G[200]}`,
-                    background: '#fff',
-                    fontSize: '12px',
-                    cursor: 'pointer'
-                  }}>
-                  환불 문의
-                </button>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                {renderOrderActions(o, goToReview, setRefundModal)}
               </div>
             </div>
           ))
