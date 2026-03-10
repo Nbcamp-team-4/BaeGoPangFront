@@ -8,179 +8,39 @@ import { FlatIcons, Icon } from '../../shared/icons';
 import { G, PRIMARY } from '../../shared/constants';
 import { getMyPage, updateMyProfile, updateNotification, logout } from '../../shared/api/myPageApi';
 
-export default function MyPage() {
-  const navigate = useNavigate();
-
-  const go = (target) => {
-    const routeMap = {
-      home: '/customer/home',
-      'order-history': '/customer/order-history'
-    };
-
-    navigate(routeMap[target] || `/customer/${target}`);
-  };
+import { apiFetch } from '../../shared/api/apiClient';
+import { login } from '../../shared/api/authApi';
 
   const [noti, setNoti] = useState(true);
   const [editProfile, setEditProfile] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [toggleLoading, setToggleLoading] = useState(false);
-
-  const [profile, setProfile] = useState({
-    name: '홍길동',
-    nick: 'user123',
-    phone: '010-1234-5678',
-    role: 'CUSTOMER',
-    orderCount: 0,
-    reviewCount: 0,
-    favoriteStoreCount: 0,
-    point: 0
-  });
-
-  const [draft, setDraft] = useState({
-    name: '홍길동',
-    nick: 'user123',
-    phone: '010-1234-5678'
-  });
-
-  useEffect(() => {
-    fetchMyPage();
-  }, []);
-
-  async function fetchMyPage() {
-    try {
-      setLoading(true);
-      const data = await getMyPage();
-
-      const nextProfile = {
-        name: data?.name ?? '홍길동',
-        nick: data?.nick ?? 'user123',
-        phone: data?.phone ?? '010-1234-5678',
-        role: data?.role ?? 'CUSTOMER',
-        orderCount: data?.orderCount ?? 0,
-        reviewCount: data?.reviewCount ?? 0,
-        favoriteStoreCount: data?.favoriteStoreCount ?? 0,
-        point: data?.point ?? 0
-      };
-
-      setProfile(nextProfile);
-      setDraft({
-        name: nextProfile.name,
-        nick: nextProfile.nick,
-        phone: nextProfile.phone
-      });
-
-      setNoti(Boolean(data?.notificationEnabled ?? true));
-    } catch (e) {
-      console.error('마이페이지 조회 실패', e);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSaveProfile() {
-    try {
-      setSaving(true);
-
-      const updated = await updateMyProfile({
-        name: draft.name,
-        nick: draft.nick,
-        phone: draft.phone
-      });
-
-      setProfile((prev) => ({
-        ...prev,
-        name: updated?.name ?? draft.name,
-        nick: updated?.nick ?? draft.nick,
-        phone: updated?.phone ?? draft.phone
-      }));
-
-      setEditProfile(false);
-      alert('프로필이 수정되었습니다.');
-    } catch (e) {
-      console.error('프로필 수정 실패', e);
-      alert('프로필 수정에 실패했습니다.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleToggleNotification() {
-    const nextValue = !noti;
-
-    try {
-      setToggleLoading(true);
-      setNoti(nextValue);
-      await updateNotification(nextValue);
-    } catch (e) {
-      console.error('알림 설정 변경 실패', e);
-      setNoti(!nextValue);
-      alert('알림 설정 변경에 실패했습니다.');
-    } finally {
-      setToggleLoading(false);
-    }
-  }
-
-  async function handleLogout() {
-    try {
-      await logout();
-      alert('로그아웃되었습니다.');
-      navigate('/auth/login');
-    } catch (e) {
-      console.error('로그아웃 실패', e);
-      alert('로그아웃에 실패했습니다.');
-    }
-  }
+  const [profile, setProfile] = useState({ name: '홍길동', nick: 'user123', phone: '010-1234-5678' });
+  const [draft, setDraft] = useState({ ...profile });
 
   const menuGroups = [
     {
       title: '주문 관리',
       items: [
         { icon: FlatIcons.orders(G[600]), label: '주문 내역', go: 'order-history' },
-        { icon: FlatIcons.heart(G[600]), label: '찜한 가게', badge: String(profile.favoriteStoreCount ?? 0) },
-        { icon: FlatIcons.review(G[600]), label: '내 리뷰', badge: String(profile.reviewCount ?? 0) }
+        { icon: FlatIcons.heart(G[600]), label: '찜한 가게', badge: '3' },
+        { icon: FlatIcons.review(G[600]), label: '내 리뷰', badge: '12' }
       ]
     },
     {
       title: '혜택',
       items: [
         { icon: FlatIcons.coupon(G[600]), label: '쿠폰', badge: '1', badgeColor: PRIMARY },
-        {
-          icon: FlatIcons.point(G[600]),
-          label: '포인트',
-          sub: `${Number(profile.point ?? 0).toLocaleString()}P`
-        }
+        { icon: FlatIcons.point(G[600]), label: '포인트', sub: '1,200P' }
       ]
     },
     {
       title: '설정',
       items: [
-        { icon: FlatIcons.bell(G[600]), label: '알림 설정', toggle: true, val: noti },
+        { icon: FlatIcons.bell(G[600]), label: '알림 설정', toggle: true, val: noti, set: setNoti },
         { icon: FlatIcons.lock(G[600]), label: '개인정보 보호' },
         { icon: FlatIcons.notice(G[600]), label: '공지사항 / 고객센터' }
       ]
     }
   ];
-
-  if (loading) {
-    return (
-      <Phone navActive="mypage">
-        <TopBar title="마이페이지" go={go} backTo="home" />
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: G[600],
-            fontSize: '14px',
-            fontWeight: 600
-          }}>
-          마이페이지 정보를 불러오는 중입니다...
-        </div>
-      </Phone>
-    );
-  }
 
   return (
     <Phone navActive="mypage">
