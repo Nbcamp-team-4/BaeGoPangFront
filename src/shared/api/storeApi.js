@@ -1,4 +1,5 @@
 import { apiFetch } from './apiClient';
+import { getDefaultAddress } from './addressApi';
 
 // 가게 상세 조회
 export const getStoreDetail = (storeId) => {
@@ -15,7 +16,7 @@ export const getStores = ({ page = 0, size = 10, categoryId }) => {
   if (size !== undefined && size !== null) params.append('size', size);
   if (categoryId) params.append('categoryId', categoryId);
 
-  return apiFetch(`/api/stores/public?${params.toString()}`, {
+  return apiFetch(`/api/stores?${params.toString()}`, {
     method: 'GET'
   });
 };
@@ -26,6 +27,9 @@ export const getNearbyStores = async ({ page = 0, size = 10, categoryId }) => {
 
   const addressRes = await getDefaultAddress();
   console.log('기본 주소 원본 응답:', addressRes);
+  if (!addressRes) {
+    throw new Error('NOT_FOUND_ADDRESS');
+  }
 
   let addressId = null;
 

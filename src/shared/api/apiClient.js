@@ -4,18 +4,17 @@ const API_BASE_URL = '';
 
 export const apiFetch = async (url, options = {}) => {
   let accessToken = getAccessToken();
+  const isFormData = options.body instanceof FormData;
 
   const headers = {
     ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers
   };
 
-  if (options.body) {
+  // FormData가 아닐 때만 application/json 지정
+  if (options.body && !isFormData && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
-
-  // console.log('요청 URL', `${API_BASE_URL}${url}`);
-  // console.log('accessToken', accessToken);
 
   let response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
@@ -70,7 +69,8 @@ export const apiFetch = async (url, options = {}) => {
     ...options.headers
   };
 
-  if (options.body) {
+  // 재요청 때도 동일하게 FormData 예외 처리
+  if (options.body && !isFormData && !retryHeaders['Content-Type']) {
     retryHeaders['Content-Type'] = 'application/json';
   }
 
