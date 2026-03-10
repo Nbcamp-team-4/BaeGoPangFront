@@ -1,92 +1,198 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { G, Container, TopBar, THead, TRow, Btn } from "../../components/UI";
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  screens/owner/OwnerReviews.jsx
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { useState } from 'react';
+import { Phone, TopBar, Btn, Badge } from '../../shared/components';
+import { FlatIcons } from '../../shared/icons';
+import { G, PRIMARY, AI_COLOR, AI_LIGHT } from '../../shared/constants';
 
-function OwnerReviews() {
-  const navigate = useNavigate();
-  const go = (path) => navigate(`/${path}`);
-
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const SAMPLE_OWNER = [
-    { id: 1, user: "user1", rating: 5, content: "최고!", date: "2026-03-01" },
-    { id: 2, user: "user2", rating: 3, content: "그냥 그랬어요", date: "2026-02-28" },
+export default function OwnerReviews({ go }) {
+  const [replyTarget, setReplyTarget] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [aiGenerated, setAiGenerated] = useState(false);
+  const reviews = [
+    {
+      user: 'user123',
+      rating: 5,
+      date: '2025-03-01',
+      menu: '김치찌개',
+      content: '국물이 진짜 얼큰하고 맛있어요!',
+      replied: true,
+      reply: '소중한 리뷰 감사합니다 😊'
+    },
+    {
+      user: 'user456',
+      rating: 4,
+      date: '2025-02-28',
+      menu: '불고기 정식',
+      content: '양념이 잘 배어있고 반찬도 신선했어요.',
+      replied: false,
+      reply: ''
+    },
+    {
+      user: 'user999',
+      rating: 2,
+      date: '2025-02-27',
+      menu: '된장찌개',
+      content: '국물이 좀 짜서 아쉬웠어요.',
+      replied: false,
+      reply: ''
+    }
   ];
-
-  useEffect(() => {
-    fetch("/api/owner/reviews")
-      .then((r) => r.json())
-      .then((data) => {
-        setReviews(data && data.length ? data : SAMPLE_OWNER);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setReviews(SAMPLE_OWNER);
-        setLoading(false);
-      });
-  }, []);
-
+  const handleAiGenerate = (r) => {
+    setAiLoading(true);
+    setAiGenerated(false);
+    setTimeout(() => {
+      setReplyText(`안녕하세요, ${r.user}님! ${r.menu} 주문 감사합니다 😊`);
+      setAiLoading(false);
+      setAiGenerated(true);
+    }, 1500);
+  };
+  function Stars({ v }) {
+    return (
+      <span style={{ color: '#FFC107', fontSize: '11px' }}>
+        {'★'.repeat(v)}
+        {'☆'.repeat(5 - v)}
+      </span>
+    );
+  }
   return (
-    <Container>
-      <TopBar title="리뷰 관리 (사장님)" go={go} backTo="owner" />
-      <div style={{ marginTop: "20px" }}>
-        <THead
-          cols={[
-            { v: "#", flex: 0.5 },
-            { v: "회원", flex: 1 },
-            { v: "평점", flex: 0.5 },
-            { v: "내용", flex: 2 },
-            { v: "날짜", flex: 1 },
-          ]}
-        />
-        {loading && <div>로딩 중...</div>}
-        {!loading && reviews.length === 0 && <div>등록된 리뷰가 없습니다.</div>}
+    <Phone noNav>
+      <TopBar title="⭐ 리뷰 관리" go={go} backTo="owner-dash" />
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '12px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
         {reviews.map((r, i) => (
-          <TRow
+          <div
             key={i}
-            cols={[
-              { v: i + 1, flex: 0.5 },
-              { v: r.user, flex: 1 },
-              { v: r.rating, flex: 0.5 },
-              { v: r.content, flex: 2 },
-              { v: r.date, flex: 1 },
-            ]}
-            actions={[
-              <Btn
-                key="reply"
-                size="sm"
-                onClick={() => {
-                  // TODO: 답글 작성 모달 등 추후 구현
-                  alert("답글 기능 준비 중");
-                }}
-              >
-                답글
-              </Btn>,
-              <Btn
-                key="delete"
-                size="sm"
-                variant="danger"
-                onClick={() => {
-                  // 예시 삭제
-                  fetch(`/api/owner/reviews/${r.id}`, { method: "DELETE" })
-                    .then((res) => {
-                      if (res.ok) {
-                        setReviews((prev) => prev.filter((_, idx) => idx !== i));
-                      }
-                    })
-                    .catch(console.error);
-                }}
-              >
-                삭제
-              </Btn>,
-            ]}
-          />
+            style={{ border: `1.5px solid ${G[200]}`, borderRadius: '13px', overflow: 'hidden', background: '#fff' }}>
+            <div style={{ padding: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '7px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  {FlatIcons.userAvatar(30)}
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 700 }}>{r.user}</div>
+                    <div style={{ fontSize: '10px', color: G[400] }}>
+                      {r.date} · {r.menu}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Stars v={r.rating} />
+                  {!r.replied ? (
+                    <Badge bg="#FFEBEE" color="#C62828">
+                      미답글
+                    </Badge>
+                  ) : (
+                    <Badge bg="#E8F5E9" color="#2E7D32">
+                      완료
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div style={{ fontSize: '12px', color: G[700], lineHeight: '1.6' }}>{r.content}</div>
+              {r.replied && (
+                <div
+                  style={{
+                    padding: '9px 10px',
+                    background: '#FFF8E1',
+                    borderRadius: '7px',
+                    borderLeft: '3px solid #FFC107',
+                    marginTop: '8px'
+                  }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#F57F17', marginBottom: '2px' }}>
+                    🏪 답글
+                  </div>
+                  <div style={{ fontSize: '11px', color: G[700] }}>{r.reply}</div>
+                </div>
+              )}
+              <div style={{ marginTop: '9px' }}>
+                {!r.replied && replyTarget !== i && (
+                  <Btn
+                    size="sm"
+                    variant="primary"
+                    onClick={() => {
+                      setReplyTarget(i);
+                      setReplyText('');
+                      setAiGenerated(false);
+                    }}>
+                    💬 답글 달기
+                  </Btn>
+                )}
+                {r.replied && replyTarget !== i && (
+                  <Btn
+                    size="sm"
+                    onClick={() => {
+                      setReplyTarget(i);
+                      setReplyText(r.reply);
+                      setAiGenerated(false);
+                    }}>
+                    ✏️ 수정
+                  </Btn>
+                )}
+              </div>
+            </div>
+            {replyTarget === i && (
+              <div
+                style={{
+                  borderTop: `1px solid ${G[200]}`,
+                  padding: '12px',
+                  background: G[50],
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '9px'
+                }}>
+                <div
+                  style={{
+                    padding: '9px 11px',
+                    background: AI_LIGHT,
+                    borderRadius: '9px',
+                    border: `1px solid ${AI_COLOR}44`
+                  }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: AI_COLOR }}>✨ AI 답글 자동 생성</div>
+                    <Btn size="sm" variant="ai" onClick={() => handleAiGenerate(r)}>
+                      {aiLoading ? '생성중...' : 'AI 생성'}
+                    </Btn>
+                  </div>
+                  {aiGenerated && !aiLoading && (
+                    <div style={{ marginTop: '5px', fontSize: '10px', color: AI_COLOR, fontWeight: 600 }}>
+                      ✅ 초안 완성. 수정 후 등록하세요.
+                    </div>
+                  )}
+                </div>
+                <div
+                  style={{
+                    padding: '10px',
+                    border: `1.5px solid ${aiGenerated ? AI_COLOR : G[300]}`,
+                    borderRadius: '9px',
+                    minHeight: '70px',
+                    background: '#fff',
+                    fontSize: '12px',
+                    color: replyText ? G[800] : G[400]
+                  }}>
+                  {replyText || '답글을 입력하세요...'}
+                </div>
+                <div style={{ display: 'flex', gap: '7px' }}>
+                  <Btn style={{ flex: 1 }} onClick={() => setReplyTarget(null)}>
+                    취소
+                  </Btn>
+                  <Btn variant="primary" style={{ flex: 1 }} onClick={() => setReplyTarget(null)}>
+                    등록
+                  </Btn>
+                </div>
+              </div>
+            )}
+          </div>
         ))}
       </div>
-    </Container>
+    </Phone>
   );
 }
-
-export default OwnerReviews;

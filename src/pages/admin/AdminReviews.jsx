@@ -1,92 +1,109 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { G, Container, TopBar, THead, TRow, Btn } from "../../components/UI";
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  screens/admin/AdminReviews.jsx
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { AdminShell, StatCard, THead, TRow, Badge } from '../../shared/components';
+import { Icon } from '../../shared/icons';
+import { G } from '../../shared/constants';
 
-function AdminReviews() {
-  const navigate = useNavigate();
-  const go = (path) => navigate(`/${path}`);
-
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const SAMPLE_ADMIN = [
-    { id: 1, store: "맛있는 한식당", user: "user1", rating: 5, content: "맛있어요", date: "2026-03-01" },
-    { id: 2, store: "황금 중식당", user: "user2", rating: 2, content: "별로예요", date: "2026-02-27" },
+export default function AdminReviews({ go }) {
+  const reviews = [
+    {
+      id: 'REV-501',
+      user: 'user123',
+      store: '맛있는 한식당',
+      rating: 5,
+      content: '국물이 진짜 맛있어요!',
+      reported: false
+    },
+    {
+      id: 'REV-500',
+      user: 'user_bad',
+      store: '황금 중식당',
+      rating: 1,
+      content: '욕설 포함 리뷰 내용...',
+      reported: true
+    },
+    {
+      id: 'REV-499',
+      user: 'user456',
+      store: '엄마손 분식',
+      rating: 4,
+      content: '맛있고 빠르게 배달됐어요',
+      reported: false
+    }
   ];
-
-  useEffect(() => {
-    fetch("/api/admin/reviews")
-      .then((r) => r.json())
-      .then((data) => {
-        setReviews(data && data.length ? data : SAMPLE_ADMIN);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setReviews(SAMPLE_ADMIN);
-        setLoading(false);
-      });
-  }, []);
-
+  function Stars({ v }) {
+    return (
+      <span style={{ color: '#FFC107', fontSize: '11px' }}>
+        {'★'.repeat(v)}
+        {'☆'.repeat(5 - v)}
+      </span>
+    );
+  }
   return (
-    <Container>
-      <TopBar title="리뷰 관리 (관리자)" go={go} backTo="admin" />
-      <div style={{ marginTop: "20px" }}>
-        <THead
-          cols={[
-            { v: "#", flex: 0.5 },
-            { v: "가게", flex: 1 },
-            { v: "회원", flex: 1 },
-            { v: "평점", flex: 0.5 },
-            { v: "내용", flex: 2 },
-            { v: "날짜", flex: 1 },
-          ]}
-        />
-        {loading && <div>로딩 중...</div>}
-        {!loading && reviews.length === 0 && <div>등록된 리뷰가 없습니다.</div>}
-        {reviews.map((r, i) => (
-          <TRow
-            key={i}
+    <AdminShell title="리뷰 관리" go={go}>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '7px' }}>
+          {[
+            { l: '전체 리뷰', v: '48,291' },
+            { l: '신고 접수', v: '8건', alert: true },
+            { l: '평균 평점', v: '4.3' }
+          ].map((s, i) => (
+            <StatCard
+              key={i}
+              label={s.l}
+              value={s.v}
+              color={s.alert ? '#C62828' : undefined}
+              bg={s.alert ? '#FFEBEE' : undefined}
+            />
+          ))}
+        </div>
+        <div style={{ border: `1.5px solid ${G[200]}`, borderRadius: '11px', overflow: 'hidden' }}>
+          <THead
             cols={[
-              { v: i + 1, flex: 0.5 },
-              { v: r.store, flex: 1 },
-              { v: r.user, flex: 1 },
-              { v: r.rating, flex: 0.5 },
-              { v: r.content, flex: 2 },
-              { v: r.date, flex: 1 },
-            ]}
-            actions={[
-              <Btn
-                key="view"
-                size="sm"
-                onClick={() => {
-                  alert("자세히 보기");
-                }}
-              >
-                보기
-              </Btn>,
-              <Btn
-                key="delete"
-                size="sm"
-                variant="danger"
-                onClick={() => {
-                  fetch(`/api/admin/reviews/${r.id}`, { method: "DELETE" })
-                    .then((res) => {
-                      if (res.ok) {
-                        setReviews((prev) => prev.filter((_, idx) => idx !== i));
-                      }
-                    })
-                    .catch(console.error);
-                }}
-              >
-                삭제
-              </Btn>,
+              { v: '리뷰/가게', flex: 2 },
+              { v: '평점', flex: 1 },
+              { v: '상태', flex: 1 }
             ]}
           />
-        ))}
+          {reviews.map((r, i) => (
+            <TRow
+              key={i}
+              highlight={r.reported}
+              cols={[
+                {
+                  v: (
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 700 }}>{r.content.slice(0, 16)}...</div>
+                      <div style={{ fontSize: '10px', color: G[400] }}>
+                        {r.user} · {r.store}
+                      </div>
+                    </div>
+                  ),
+                  flex: 2
+                },
+                { v: <Stars v={r.rating} />, flex: 1 },
+                {
+                  v: (
+                    <Badge bg={r.reported ? '#FFEBEE' : '#E8F5E9'} color={r.reported ? '#C62828' : '#2E7D32'}>
+                      {r.reported ? '신고' : '정상'}
+                    </Badge>
+                  ),
+                  flex: 1
+                }
+              ]}
+              actions={[
+                <button key="v" style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  {Icon.eye()}
+                </button>,
+                <button key="d" style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  {Icon.trash()}
+                </button>
+              ]}
+            />
+          ))}
+        </div>
       </div>
-    </Container>
+    </AdminShell>
   );
 }
-
-export default AdminReviews;
