@@ -42,7 +42,6 @@ export function WidgetSuccessPage() {
     confirm()
       .then(async (data) => {
         setResponseData(data);
-        await delay(1000);
         navigate(`/customer/home`);
       })
       .catch((error) => {

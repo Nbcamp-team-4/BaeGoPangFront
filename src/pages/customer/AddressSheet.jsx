@@ -5,11 +5,11 @@ import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
 import { Icon } from '../../shared/icons';
 
 import { apiFetch } from '../../shared/api/apiClient';
-
+import { useNavigate } from 'react-router-dom';
 // ── 주소 목록 페이지 ──────────────────────────────────────
 function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack }) {
   const selected = addrs.find((a) => a.selected);
-
+  const navigate = useNavigate();
   return (
     <Phone noNav>
       <TopBar title="배달 주소" backTo={onBack} />
@@ -118,7 +118,18 @@ function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack
       </div>
 
       <div style={{ padding: '12px 16px 32px', flexShrink: 0, borderTop: `1px solid ${G[100]}` }}>
-        <Btn variant="primary" full size="lg" disabled={!selected} onClick={() => onConfirm(selected)}>
+        <Btn
+          variant="primary"
+          full
+          size="lg"
+          disabled={!selected}
+          onClick={() => {
+            if (onConfirm) {
+              onConfirm(selected);
+            } else {
+              navigate(-1);
+            }
+          }}>
           이 주소로 배달받기
         </Btn>
       </div>
