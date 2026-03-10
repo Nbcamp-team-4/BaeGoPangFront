@@ -1,6 +1,6 @@
-import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import './App.css';
+import ReactDOM from "react-dom/client";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import "./App.css";
 /* toss */
 import { BrandpayCheckoutPage } from './pages/toss/brandpay/BrandpayCheckout';
 import { FailPage } from './pages/Fail';
@@ -30,6 +30,7 @@ import OrderHistory from './pages/customer/OrderHistory';
 import OrderDetail from './pages/customer/OrderDetail';
 import Review from './pages/customer/Review';
 import MyPage from './pages/customer/MyPage';
+import AddressSheet from './pages/customer/AddressSheet';
 
 /* owner */
 import OwnerDash from './pages/owner/OwnerDash';
@@ -51,10 +52,12 @@ import AdminAI from './pages/admin/AdminAI';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminReviews from './pages/admin/AdminReviews';
 
+import NotFound from './pages/NotFound'; // 추가
+
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <WidgetCheckoutPage />
+    path: "/",
+    element: <Navigate to="/auth/login" replace />,
   },
 
   // 건들지 말것
@@ -173,6 +176,7 @@ const router = createBrowserRouter([
         path: 'order-detail',
         element: <OrderDetail />
       },
+      { path: 'address-sheet', element: <AddressSheet /> },
       {
         path: 'review',
         element: <Review />
@@ -265,6 +269,10 @@ const router = createBrowserRouter([
   {
     path: 'fail',
     element: <FailPage />
+  },
+  {
+    path: '*',
+    element: <NotFound />
   }
 ]);
 
