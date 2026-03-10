@@ -55,6 +55,11 @@ import AdminReviews from './pages/admin/AdminReviews';
 import NotFound from './pages/NotFound'; // 추가
 
 const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Navigate to="/auth/login" replace />
+  },
+
   // 건들지 말것
   {
     path: 'widget',
