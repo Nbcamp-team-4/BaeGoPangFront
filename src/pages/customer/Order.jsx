@@ -50,6 +50,9 @@ export default function Order() {
     return <AddressPage onBack={() => setAddrOpen(false)} onConfirm={handleAddrConfirm} />;
   }
 
+  const handlePayment = () => {
+    navigate('/widget/checkout');
+  };
   return (
     <Phone navActive="cart">
       <TopBar title="주문하기" backTo="/customer/cart" />
@@ -327,7 +330,7 @@ export default function Order() {
 
         {/* 결제 버튼 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <Btn variant="primary" full size="lg" onClick={() => goTo('order-complete')}>
+          <Btn variant="primary" full size="lg" onClick={() => handlePayment()}>
             40,000원 결제하기
           </Btn>
           <button

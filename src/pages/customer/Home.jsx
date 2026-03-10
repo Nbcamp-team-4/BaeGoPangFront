@@ -9,6 +9,8 @@ import { G, PRIMARY, AI_COLOR } from '../../shared/constants';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../shared/api/apiClient';
 
+import { getStores } from '../../shared/api/storeApi';
+
 function Stars({ v = 4.5, size = 12 }) {
   return (
     <span style={{ color: '#FFC107', fontSize: `${size}px` }}>
@@ -42,9 +44,15 @@ export default function Home() {
           method: 'GET'
         });
 
-        console.log('카테고리 전체 응답:', res.data);
+        if (!res.ok) {
+          const bodyText = await res.text().catch(() => '');
+          throw new Error(`categories request failed: ${res.status} ${res.statusText} ${bodyText}`);
+        }
 
-        const rawList = res?.data?.data?.content ?? res?.data?.content ?? [];
+        const json = await res.json();
+        console.log('카테고리 전체 응답:', json);
+
+        const rawList = json?.data?.content ?? json?.content ?? json?.data ?? [];
 
         const categoryList = Array.isArray(rawList) ? rawList : [];
 
@@ -105,21 +113,51 @@ export default function Home() {
   useEffect(() => {
     const fetchStores = async () => {
       try {
-        // const data = await apiFetch('/api/stores/nearby', {
-        //   method: 'GET',
-        //
-        // });
+        setLoading(true);
+        setError(null);
 
-        setStores(data.data ?? mockStores);
+        const res = await getStores(cat);
+
+        // `getStores`는 내부 조건에 따라 [] 또는 fetch Response를 반환함
+        if (Array.isArray(res)) {
+          setStores(res.length ? res : mockStores);
+          return;
+        }
+
+        if (!res.ok) {
+          const bodyText = await res.text().catch(() => '');
+          throw new Error(`stores request failed: ${res.status} ${res.statusText} ${bodyText}`);
+        }
+
+        const json = await res.json();
+        console.log('가게 전체 응답:', json);
+
+        const rawList = json?.data?.content ?? json?.content ?? json?.data ?? [];
+        const list = Array.isArray(rawList) ? rawList : [];
+
+        const normalized = list.map((s) => ({
+          name: s.name ?? s.storeName ?? s.title ?? '가게',
+          cat: s.categoryName ?? s.category ?? s.cat ?? '',
+          rating: s.rating ?? s.averageRating ?? 0,
+          reviews: s.reviewCount ?? s.reviews ?? 0,
+          dist: s.distanceKm != null ? `${s.distanceKm}km` : s.dist ?? '',
+          minOrder: s.minOrderAmount != null ? s.minOrderAmount.toLocaleString() : s.minOrder ?? '',
+          fee: s.deliveryFee != null ? s.deliveryFee.toLocaleString() : s.fee ?? '',
+          speed: s.eta ?? s.speed ?? ''
+        }));
+
+        setStores(normalized.length ? normalized : mockStores);
       } catch (e) {
-        console.error(e);
+        console.error('가게 조회 실패', e);
+        setError(e);
+        setStores(mockStores);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStores();
-  }, []);
+  }, [cat]);
 
   return (
     <Phone navActive="home">
