@@ -14,15 +14,16 @@ function AIRecommend() {
   const moods = ['🌶️ 매운 게 땡겨요', '🥣 따뜻한 국물', '🥗 가볍게', '🍖 고기가 땡겨요', '🍜 면 요리', '🎲 아무거나'];
   const people = ['혼자', '2~3명', '4명 이상'];
   const budget = ['1만원 이하', '1~2만원', '2만원 이상'];
+
   const handleAIRequest = async () => {
     if (!sel.mood || !sel.people || !sel.budget) {
       alert('모든 질문에 답해주세요!');
       return;
     }
-    setStep(1); // 로딩 화면으로 전환
+
+    setStep(1);
 
     try {
-      // 1. 서버에 POST 요청 (데이터를 body에 담아 보냄)
       const response = await apiFetch('/api/ai/recommend', {
         method: 'POST',
         body: JSON.stringify({
@@ -32,33 +33,38 @@ function AIRecommend() {
         })
       });
 
-      console.log('전체 서버 응답 구조:', response);
+      console.log('AI 추천 원본 응답:', response);
 
-      // 2. BaseResponse 구조 분석 (성공 시 response.data에 리스트가 담김)
-      if (response && response.ok) {
-        let data = '';
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          data += decoder.decode(value, { stream: true });
-        }
-        const res = JSON.parse(data); // 최종적으로 AI 추천 리스트가 담긴 객체
-        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-          setResults(res.data);
-          // AI가 고심하는 느낌을 주기 위한 지연 시간
-          setTimeout(() => setStep(2), 1500);
-        } else {
-          throw new Error('추천할 수 있는 메뉴가 DB에 없습니다.');
-        }
-      } else {
-        throw new Error(response?.message || 'AI 추천 서비스를 일시적으로 사용할 수 없습니다.');
+      const res = await response.json();
+      console.log('AI 추천 실제 응답 JSON:', res);
+
+      if (!response.ok) {
+        throw new Error(res?.message || 'AI 추천 서비스를 일시적으로 사용할 수 없습니다.');
       }
+
+      if (!res.success) {
+        throw new Error(res?.message || 'AI 추천에 실패했습니다.');
+      }
+
+      if (!Array.isArray(res.data) || res.data.length === 0) {
+        setResults([
+          {
+            name: '추천 결과 없음',
+            storeName: '조건에 맞는 메뉴 없음',
+            price: 0,
+            description: '현재 조건에 맞는 추천 메뉴가 없습니다. 다른 조건으로 다시 시도해 주세요.',
+            matchRate: 0
+          }
+        ]);
+        setTimeout(() => setStep(2), 1500);
+        return;
+      }
+
+      setResults(res.data);
+      setTimeout(() => setStep(2), 1500);
     } catch (error) {
       console.error('연동 에러 상세:', error);
 
-      // 에러 발생 시 사용자 경험을 위해 가짜 데이터라도 보여주거나 에러 메시지 표시
       setResults([
         {
           name: '오류 발생',
