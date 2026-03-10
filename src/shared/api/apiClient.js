@@ -32,7 +32,7 @@ export const apiFetch = async (url, options = {}) => {
   }
 
   // reissue 요청
-  const reissueResponse = await fetch(`${API_BASE_URL}/api/auth/reissue`, {
+  const reissueResponse = await fetch(`${API_BASE_URL}api/auth/reissue`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

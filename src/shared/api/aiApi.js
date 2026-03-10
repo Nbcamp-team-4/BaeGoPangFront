@@ -1,5 +1,5 @@
-import api from "../../config/api"; // 이전에 설정한 axios 인스턴스
-
+// 기존 코드: import api from "../../config/api"; (에러 발생)
+import {apiFetch} from "../../shared/api/apiClient";
 /**
  * AI 리뷰 답글 생성 요청
  * @param {string} reviewId - 리뷰의 UUID
@@ -7,7 +7,7 @@ import api from "../../config/api"; // 이전에 설정한 axios 인스턴스
  */
 export const generateAiReviewReply = async (reviewId, tone) => {
   // 백엔드: @PostMapping("/review-reply")
-  const response = await api.post("/api/ai/review-reply", {
+  const response = await apiFetch("/api/ai/review-reply", {
     reviewId: reviewId,
     tone: tone
   });

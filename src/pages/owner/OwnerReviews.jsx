@@ -1,13 +1,17 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  screens/owner/OwnerReviews.jsx
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-import { useState ,useEffect} from "react";
-import { Phone, TopBar, Btn, Badge } from "../../shared/components";
+import { useState, useEffect } from "react";
+// 1. components.jsx 파일이 shared 바로 아래에 있으므로 경로 확인
+import { Phone, TopBar, Btn, Badge } from "../../shared/components"; 
+// 2. icons.jsx 파일도 shared 바로 아래에 있습니다.
 import { FlatIcons } from "../../shared/icons";
+// 3. constants.js 파일도 shared 바로 아래에 있습니다.
 import { G, PRIMARY, AI_COLOR, AI_LIGHT } from "../../shared/constants";
+// 4. aiApi.js는 shared/api/ 폴더 안에 있습니다. (경로 한 단계 더 추가)
 import { generateAiReviewReply } from "../../shared/api/aiApi";
-import api from "../../config/api";
 
+import {apiFetch} from "../../shared/api/apiClient";
 function Stars({ v }) {
   return (
     <span style={{ color: "#FFC107", fontSize: "11px" }}>
@@ -30,7 +34,8 @@ useEffect(() => {
         setLoading(true);
 
         // 1. [실제 연동] 내 가게 목록 조회 (백엔드: GET /api/stores/my)
-        const storeRes = await api.get(`stores/my`, {
+        const storeRes = await apiFetch(`stores/my`, {    
+          method: 'GET',
           params: { userId: currentUserId } // 백엔드 @RequestParam UUID userId 대응
         });
 
@@ -41,7 +46,7 @@ useEffect(() => {
           setStoreName(myStore.name);
 
           // 2. [실제 연동] 가져온 실제 storeId로 리뷰 조회 (백엔드: GET /api/reviews/stores/{storeId})
-          const reviewRes = await api.get(`/api/reviews/stores/${myStore.id}`);
+          const reviewRes = await apiFetch(`/api/reviews/stores/${myStore.id}`);
           setReviews(reviewRes.data);
         }
       } catch (error) {
