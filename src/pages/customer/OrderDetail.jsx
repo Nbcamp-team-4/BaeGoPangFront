@@ -283,10 +283,10 @@ function StatusBanner_Canceled() {
 
 export default function OrderDetail() {
   const navigate = useNavigate();
-  const goTo = (path) => navigate(`/customer/${path}`);
 
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const goTo = (path) => navigate(`/customer/review?orderId=${orderId}`);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
