@@ -19,7 +19,7 @@ function Stars({ v = 4.5, size = 12 }) {
 }
 
 export default function Home() {
-  // 라우터
+  // 라우터ㅜ
   const navigate = useNavigate();
   // 카테고리
   const mockCats = [
@@ -34,19 +34,24 @@ export default function Home() {
 
   const [categories, setCategories] = useState(mockCats);
   const [cat, setCat] = useState(null);
-
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await apiFetch('/api/categories', {
           method: 'GET'
         });
+        console.log('카테고리 전체 응답 객체:', res);
 
-        console.log('카테고리 전체 응답:', res.data);
+        if (!res.ok) {
+          const bodyText = await res.text().catch(() => '');
+          throw new Error(`categories request failed: ${res.status} ${res.statusText} ${bodyText}`);
+        }
 
-        const rawList = res?.data?.data?.content ?? res?.data?.content ?? [];
+        const json = await res.json();
 
-        const categoryList = Array.isArray(rawList) ? rawList : [];
+        console.log('카테고리 전체 응답:', json);
+
+        const categoryList = Array.isArray(json?.content) ? json.content : [];
 
         const normalizedCategories = categoryList.map((item) => ({
           id: item.id,
@@ -55,8 +60,6 @@ export default function Home() {
         }));
 
         setCategories([{ id: null, name: '전체', icon: '' }, ...normalizedCategories]);
-
-        console.log('성공적으로 카테고리를 불러왔습니다.');
       } catch (e) {
         console.error('카테고리 조회 실패', e);
       }
