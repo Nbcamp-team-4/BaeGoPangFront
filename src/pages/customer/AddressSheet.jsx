@@ -4,6 +4,9 @@ import { Phone, TopBar, Btn, Badge } from '../../shared/components';
 import { G, PRIMARY, PRIMARY_LIGHT } from '../../shared/constants';
 import { Icon } from '../../shared/icons';
 
+import { apiFetch } from '../../shared/api/apiClient';
+import { login } from '../../shared/api/authApi';
+
 // ── 주소 목록 페이지 ──────────────────────────────────────
 function AddressListPage({ addrs, onSelect, onDelete, onGoAdd, onConfirm, onBack }) {
   const selected = addrs.find((a) => a.selected);
