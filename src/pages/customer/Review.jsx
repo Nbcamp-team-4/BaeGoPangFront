@@ -1,6 +1,7 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  screens/customer/Review.jsx (헤더 오류 수정본)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<<<<<<< HEAD
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, TopBar, Btn } from '../../shared/components';
@@ -150,6 +151,157 @@ function Review() {
 
         <Btn variant="primary" full size="lg" onClick={handleSubmit} style={{ marginTop: '10px' }}>
           리뷰 등록하기
+=======
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Phone, TopBar, Btn } from '../../shared/components';
+import { G } from '../../shared/constants';
+import { FlatIcons } from '../../shared/icons';
+import { createReview } from '../../shared/api/reviewApi';
+import { getOrderDetail, getOrderDetailMock } from '../../shared/api/orderApi';
+
+export default function Review({ go }) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [stars, setStars] = useState(4);
+  const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [storeName, setStoreName] = useState('주문 정보 로딩 중...');
+  const [menuSummary, setMenuSummary] = useState('');
+  const labels = ['', '별로예요', '그냥그래요', '괜찮아요', '좋아요', '최고예요!'];
+  const starColors = ['', '#E53935', '#FF7043', '#FFA726', '#FFC107', '#FFD600'];
+  const orderId = searchParams.get('orderId') || 'ORD-001';
+
+  useEffect(() => {
+    const loadOrderDetail = async () => {
+      try {
+        setIsLoading(true);
+        let orderData = null;
+
+        try {
+          orderData = await getOrderDetail(orderId);
+        } catch {
+          if (import.meta.env.DEV) {
+            orderData = getOrderDetailMock(orderId);
+          }
+        }
+
+        if (orderData) {
+          setStoreName(orderData.storeName || '주문 정보');
+          setMenuSummary(
+            orderData.menuItems
+              ? `${orderData.menuItems[0]}${orderData.menuItems.length > 1 ? ` 외 ${orderData.menuItems.length - 1}건` : ''}`
+              : '주문 메뉴'
+          );
+        } else {
+          setStoreName('주문 정보');
+          setMenuSummary('주문 메뉴');
+        }
+
+        setIsLoading(false);
+      } catch {
+        setIsLoading(false);
+        setErrorMessage('주문 정보를 불러올 수 없습니다.');
+      }
+    };
+
+    loadOrderDetail();
+  }, [orderId]);
+
+  const handleSubmit = async () => {
+    const trimmedContent = content.trim();
+
+    if (!trimmedContent || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      await createReview({
+        orderId,
+        rating: stars,
+        content: trimmedContent,
+        storeName
+      });
+
+      navigate('/customer/order-history');
+    } catch (error) {
+      setErrorMessage(error.message || '리뷰 등록에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Phone navActive="order-history" go={go}>
+        <TopBar title="리뷰 작성" go={(path) => (path ? navigate(`/customer/${path}`) : navigate(-1))} backTo="order-detail" />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: G[500] }}>
+          주문 정보를 불러오는 중입니다...
+        </div>
+      </Phone>
+    );
+  }
+
+  return (
+    <Phone navActive="order-history" go={go}>
+      <TopBar title="리뷰 작성" go={(path) => (path ? navigate(`/customer/${path}`) : navigate(-1))} backTo="order-detail" />
+      <div style={{ flex: 1, overflowY: 'auto', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '11px', background: G[50], borderRadius: '9px', textAlign: 'center', border: `1px solid ${G[200]}` }}>
+          <div style={{ fontSize: '13px', fontWeight: 700 }}>{storeName}</div>
+          <div style={{ fontSize: '11px', color: G[500], marginTop: '2px' }}>{orderId} · {menuSummary}</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: G[600], marginBottom: '12px' }}>이 가게는 어떠셨나요?</div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+            {[1, 2, 3, 4, 5].map((score) => (
+              <div
+                key={score}
+                onClick={() => setStars(score)}
+                style={{ cursor: 'pointer', transform: score === stars ? 'scale(1.2)' : 'scale(1)' }}>
+                {score <= stars ? FlatIcons.starFilled(starColors[stars] || '#FFC107') : FlatIcons.starEmpty(G[300])}
+              </div>
+            ))}
+          </div>
+          {stars>0 && (
+            <div style={{ marginTop: '9px', display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 14px', borderRadius: '20px', background: `${starColors[stars]}22` }}>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: starColors[stars] }}>{labels[stars]}</span>
+            </div>
+          )}
+        </div>
+        <div>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: G[600], marginBottom: '5px' }}>리뷰 내용</div>
+          <textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            placeholder="음식 맛, 배달 속도, 포장 상태 등을 알려주세요 :)"
+            style={{
+              width: '100%',
+              padding: '13px',
+              border: `1.5px solid ${G[300]}`,
+              borderRadius: '9px',
+              minHeight: '120px',
+              color: G[900],
+              fontSize: '12px',
+              background: G[50],
+              resize: 'vertical',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box',
+              outline: 'none'
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '11px', color: errorMessage ? '#C62828' : G[500] }}>
+            <span>{errorMessage || '10자 이상 작성하면 더 좋은 리뷰가 됩니다.'}</span>
+            <span>{content.trim().length}/300</span>
+          </div>
+        </div>
+        <Btn variant="primary" full disabled={!content.trim() || isSubmitting} onClick={handleSubmit}>
+          {isSubmitting ? '등록 중...' : '리뷰 등록'}
+>>>>>>> 221c319 (feat: review frontend)
         </Btn>
       </div>
     </Phone>

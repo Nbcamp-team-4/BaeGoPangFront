@@ -1,4 +1,5 @@
 import { apiFetch } from './apiClient';
+<<<<<<< HEAD
 import { getMyCart } from './cartApi';
 import { getAddresses } from './addressApi';
 export const getTotalPrice = async () => {
@@ -104,4 +105,40 @@ export const cancelOrder = async (orderId, reason) => {
     },
     body: JSON.stringify(reason)
   });
+=======
+
+export const getOrderDetail = async (orderId) => {
+  const response = await apiFetch(`/api/orders/${orderId}`, {
+    method: 'GET'
+  });
+
+  if (!response.ok) {
+    throw new Error('주문 정보를 불러올 수 없습니다.');
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getOrderDetailMock = (orderId) => {
+  const mockData = {
+    'ORD-001': {
+      orderId: 'ORD-001',
+      storeName: '맛있는 한식당',
+      menuItems: ['김치찌개', '불고기 정식']
+    },
+    'ORD-002': {
+      orderId: 'ORD-002',
+      storeName: '황금 중식당',
+      menuItems: ['마라탕', '쌀국수']
+    },
+    'ORD-016': {
+      orderId: 'ORD-016',
+      storeName: '엄마손 분식',
+      menuItems: ['떡볶이', '순대']
+    }
+  };
+
+  return mockData[orderId] || null;
+>>>>>>> 221c319 (feat: review frontend)
 };

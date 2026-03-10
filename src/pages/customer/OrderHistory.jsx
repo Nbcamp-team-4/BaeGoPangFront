@@ -1,11 +1,20 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  screens/customer/OrderHistory.jsx
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<<<<<<< HEAD
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Phone, TopBar, Btn } from '../../shared/components';
 import { FlatIcons } from '../../shared/icons';
 import { G, PRIMARY } from '../../shared/constants';
+=======
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Phone, TopBar, Btn, Badge } from "../../shared/components";
+import { FlatIcons } from "../../shared/icons";
+import { G, PRIMARY } from "../../shared/constants";
+import { getSubmittedReviewByOrderId } from "../../shared/utils/reviewStorage";
+>>>>>>> 221c319 (feat: review frontend)
 
 /** * 1. 환불 모달 (같은 파일에 선언)
  * export를 붙여두면 다른 파일(OrderDetail 등)에서도 쓸 수 있습니다.
@@ -112,6 +121,7 @@ export function RefundModal({ orderId, orderStore, orderAmount, onClose, onDone 
   );
 }
 
+<<<<<<< HEAD
 /** * 2. 주문 내역 메인 컴포넌트
  */
 export default function OrderHistory() {
@@ -120,6 +130,21 @@ export default function OrderHistory() {
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+=======
+export default function OrderHistory({ go }) {
+  const navigate = useNavigate();
+  const orders = [
+    { id:"ORD-016", store:"엄마손 분식",   amount:"13,000원", date:"2025-03-02", status:"주문대기",  color:PRIMARY,    bg:"#FFF3F0", canCancel:true,  canRefund:false, payFailed:false },
+    { id:"ORD-001", store:"맛있는 한식당", amount:"37,000원", date:"2025-03-01", status:"배달완료",  color:"#2E7D32",  bg:"#E8F5E9", canCancel:false, canRefund:true,  payFailed:false },
+    { id:"ORD-002", store:"황금 중식당",   amount:"22,000원", date:"2025-02-28", status:"조리중",    color:"#E65100",  bg:"#FFF3E0", canCancel:false, canRefund:false, payFailed:false },
+    { id:"ORD-005", store:"두부마을",       amount:"9,000원",  date:"2025-02-27", status:"환불요청",  color:"#7B1FA2",  bg:"#F3E5F5", canCancel:false, canRefund:false, payFailed:false, isRefundPending:true },
+    { id:"ORD-006", store:"엄마손 분식",   amount:"11,000원", date:"2025-02-26", status:"환불완료",  color:"#4A148C",  bg:"#EDE7FF", canCancel:false, canRefund:false, payFailed:false, isRefundDoneServer:true },
+    { id:"ORD-003", store:"엄마손 분식",   amount:"15,000원", date:"2025-02-25", status:"결제실패",  color:"#C62828",  bg:"#FFEBEE", canCancel:false, canRefund:false, payFailed:true },
+    { id:"ORD-004", store:"두부마을",       amount:"9,000원",  date:"2025-02-24", status:"주문취소",  color:G[500],     bg:G[100],    canCancel:false, canRefund:false, payFailed:false },
+  ];
+  const [cancelled,   setCancelled]   = useState([]);
+  const [refundDone,  setRefundDone]  = useState([]);
+>>>>>>> 221c319 (feat: review frontend)
   const [refundModal, setRefundModal] = useState(null);
 
   // 테스트용 유저 ID (실제 운영 시 세션에서 가져옴)
@@ -166,6 +191,7 @@ export default function OrderHistory() {
           onDone={() => setRefundModal(null)}
         />
       )}
+<<<<<<< HEAD
 
       <TopBar title="주문 내역" go={go} backTo="customer/home" />
 
@@ -197,11 +223,28 @@ export default function OrderHistory() {
                   }}>
                   {o.status}
                 </span>
+=======
+      <TopBar title="주문 내역" go={go} backTo="home"/>
+      <div style={{flex:1,overflowY:"auto",padding:"14px",display:"flex",flexDirection:"column",gap:"9px"}}>
+        {orders.map((o,i) => {
+          const isCancelled = cancelled.includes(o.id);
+          const isRefunded  = refundDone.includes(o.id);
+          const submittedReview = getSubmittedReviewByOrderId(o.id);
+          const displayStatus = isCancelled?"주문취소":isRefunded?"환불요청":o.isRefundPending?"환불요청":o.isRefundDoneServer?"환불완료":o.status;
+          const displayColor  = isCancelled?"#C62828":isRefunded||o.isRefundPending?"#7B1FA2":o.isRefundDoneServer?"#4A148C":o.color;
+          const displayBg     = isCancelled?"#FFEBEE":isRefunded||o.isRefundPending?"#F3E5F5":o.isRefundDoneServer?"#EDE7FF":o.bg;
+          return (
+            <div key={i} onClick={()=>go("order-detail")} style={{border:`1.5px solid ${G[200]}`,borderRadius:"11px",padding:"13px",cursor:"pointer",borderLeftWidth:"4px",borderLeftColor:displayColor,background:"#fff"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:"14px",fontWeight:800}}>{o.store}</span>
+                <span style={{fontSize:"11px",fontWeight:700,color:displayColor,padding:"3px 7px",borderRadius:"5px",background:displayBg}}>{displayStatus}</span>
+>>>>>>> 221c319 (feat: review frontend)
               </div>
 
               <div style={{ fontSize: '12px', color: G[500], marginTop: '6px' }}>
                 주문일: {o.createdAt?.split('T')[0]} · {o.totalPrice?.toLocaleString()}원
               </div>
+<<<<<<< HEAD
 
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 {/* ✅ 배달 완료 상태일 때만 리뷰 작성 버튼 노출 */}
@@ -230,6 +273,34 @@ export default function OrderHistory() {
                   }}>
                   환불 문의
                 </button>
+=======
+              <div style={{marginTop:"9px",display:"flex",gap:"6px",flexWrap:"wrap"}} onClick={e=>e.stopPropagation()}>
+                {o.status==="배달완료" && !isCancelled && !isRefunded && !submittedReview && <Btn size="sm" variant="primary" onClick={e=>{e.stopPropagation();navigate(`/customer/review?orderId=${encodeURIComponent(o.id)}`);}}>리뷰 작성</Btn>}
+                {submittedReview && (
+                  <span style={{fontSize:"11px",color:"#2E7D32",fontWeight:700,padding:"5px 9px",borderRadius:"7px",background:"#E8F5E9",border:"1px solid #A5D6A7"}}>
+                    리뷰 작성 완료
+                  </span>
+                )}
+                {o.canCancel && !isCancelled && (
+                  <button onClick={e=>{e.stopPropagation();setCancelled(v=>[...v,o.id]);}} style={{padding:"5px 11px",borderRadius:"7px",border:"1.5px solid #FFCDD2",background:"#FFF5F5",color:"#C62828",fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:"5px"}}>
+                    {FlatIcons.cancel()} 주문 취소
+                  </button>
+                )}
+                {o.canRefund && !isRefunded && !isCancelled && (
+                  <button onClick={e=>{e.stopPropagation();setRefundModal({id:o.id,store:o.store,amount:o.amount});}} style={{padding:"5px 11px",borderRadius:"7px",border:"1.5px solid #CE93D8",background:"#F3E5F5",color:"#7B1FA2",fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>↩ 환불 신청</button>
+                )}
+                {o.payFailed && (
+                  <button onClick={e=>{e.stopPropagation();go("order-fail");}} style={{padding:"5px 11px",borderRadius:"7px",border:`1.5px solid ${PRIMARY}44`,background:"#FFF3F0",color:PRIMARY,fontSize:"11px",fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>💳 재결제</button>
+                )}
+                {isCancelled && <span style={{fontSize:"11px",color:"#C62828",fontWeight:600}}>✗ 취소 완료</span>}
+                {(isRefunded||o.isRefundPending)&&!o.isRefundDoneServer && <span style={{fontSize:"11px",color:"#7B1FA2",fontWeight:600}}>↩ 환불 요청중</span>}
+                {o.isRefundDoneServer && <span style={{fontSize:"11px",color:"#4A148C",fontWeight:600}}>✅ 환불 완료</span>}
+                {submittedReview?.content && (
+                  <div style={{width:"100%",padding:"8px 10px",borderRadius:"8px",background:G[50],border:`1px solid ${G[200]}`,fontSize:"11px",color:G[700],lineHeight:"1.5"}}>
+                    내 리뷰: {submittedReview.content}
+                  </div>
+                )}
+>>>>>>> 221c319 (feat: review frontend)
               </div>
             </div>
           ))
