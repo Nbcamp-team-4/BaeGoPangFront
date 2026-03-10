@@ -517,8 +517,10 @@ export default function OrderDetail() {
       case 'COMPLETED':
         return (
           <div style={{ display: 'flex', gap: '7px', width: '100%' }}>
-            <button
-              onClick={() => setRefundModal(true)}
+            {/* <button
+              onClick={() => {
+                setRefundModal(true);
+              }}
               style={{
                 flex: 1,
                 padding: '11px 0',
@@ -532,7 +534,7 @@ export default function OrderDetail() {
                 fontFamily: 'inherit'
               }}>
               ↩ 환불 신청
-            </button>
+            </button> */}
             <Btn variant="primary" style={{ flex: 1 }} onClick={() => goTo('review')}>
               ⭐ 리뷰 작성
             </Btn>

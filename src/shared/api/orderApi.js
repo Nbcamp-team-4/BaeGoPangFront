@@ -105,3 +105,7 @@ export const cancelOrder = async (orderId, reason) => {
     body: JSON.stringify(reason)
   });
 };
+
+export const getMyOrders = async () => {
+  return await apiFetch('/api/orders');
+};
