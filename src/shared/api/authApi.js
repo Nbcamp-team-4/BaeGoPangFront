@@ -1,5 +1,5 @@
 import { setAccessToken, setRefreshToken, getRefreshToken, clearTokens } from '../utils/token';
-
+import { setLoginId, setRoles, setUserName, clearUsers } from '../utils/user';
 const API_BASE_URL = 'http://localhost:8080';
 
 /**
@@ -26,12 +26,29 @@ export const login = async (loginId, password) => {
   const accessToken = data.accessToken ?? data.data?.accessToken;
   const refreshToken = data.refreshToken ?? data.data?.refreshToken;
 
+  const user = data.user ?? data.data?.user;
+  const userLoginId = user?.loginId;
+  const userName = user?.name;
+  const userRoles = user?.roles;
+
   if (accessToken) {
     setAccessToken(accessToken);
   }
 
   if (refreshToken) {
     setRefreshToken(refreshToken);
+  }
+
+  if (userLoginId) {
+    setLoginId(userLoginId);
+  }
+
+  if (userName) {
+    setUserName(userName);
+  }
+
+  if (userRoles) {
+    setRoles(userRoles);
   }
 
   return data;
@@ -59,6 +76,7 @@ export const reissueToken = async () => {
 
   if (!response.ok) {
     clearTokens();
+    clearUsers();
     throw new Error('토큰 재발급 실패');
   }
 

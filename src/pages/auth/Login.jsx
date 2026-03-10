@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../../shared/api/authApi';
 import { apiFetch } from '../../shared/api/apiClient';
 
-export default function Login({ go }) {
+export default function Login() {
   // 1. 라우터
   const navigate = useNavigate();
 
@@ -71,7 +71,7 @@ export default function Login({ go }) {
           <span>|</span>
           <span style={{ cursor: 'pointer' }}>비밀번호 찾기</span>
           <span>|</span>
-          <span onClick={() => go('signup')} style={{ color: PRIMARY, fontWeight: 700, cursor: 'pointer' }}>
+          <span onClick={() => navigate('/auth/signup')} style={{ color: PRIMARY, fontWeight: 700, cursor: 'pointer' }}>
             회원가입
           </span>
         </div>
